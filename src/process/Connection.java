@@ -75,6 +75,7 @@ public class Connection extends Thread {
 			followerState_.ready();
 			if(followerState_.allReady())
 			{
+				followerState_.notifiedTrue();
 				synchronized(followerState_)
 				{
 					if(process_.getDebug()) process_.print("Notifying follower state.");

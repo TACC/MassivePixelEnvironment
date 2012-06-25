@@ -232,13 +232,17 @@ public class Process extends Thread {
 				if(debug_) print("Waiting on followerState");
 				synchronized(followerState_)
 				{
-					// wait for followerState notification that all followers have reported
-					try {
-						followerState_.wait();
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+					if(!followerState_.notified())
+					{
+						// wait for followerState notification that all followers have reported
+						try {
+							followerState_.wait();
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
+					followerState_.notifiedFalse();
 				}
 				notified_.set(true);
 				
