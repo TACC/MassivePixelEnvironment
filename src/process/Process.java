@@ -241,22 +241,6 @@ public class Process extends Thread {
 				notified_.set(false);
 				broadcastFE();
 				
-				/*
-				if(followerState_.allReady())
-				{
-					
-					synchronized(pApplet_)
-					{
-						notified_.set(true);
-						pApplet_.notify();
-						
-						// all clients will be sent the frame event message, so set their state to not ready until they respond
-						followerState_.setAllNotReady();
-					}
-					
-					broadcastFE(); // send all followers the command to render
-				}
-				*/
 			}
 			
 			// we are a follower and we should receive a msg
