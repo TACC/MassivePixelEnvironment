@@ -1,4 +1,4 @@
 MPE-ClusterEdition
 ==================
 
-Most Pixels Ever. Redeveloped for Clusters and Tiled Displays!
+Most Pixels Ever. Developed for Clusters and Tiled Displays!
