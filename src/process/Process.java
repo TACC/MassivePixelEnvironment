@@ -53,6 +53,15 @@ public class Process extends Thread {
 	// have we notified?
 	AtomicBoolean notified_;
 	
+	// do we have input to send along with the next FE message? (leader)
+	boolean sendAttributes_;
+	
+	// do we have input from the server along with the FE message? (follower)
+	boolean receivedAttributes_;
+	
+	// this is the actual object that will be sent along with the FE message
+	String attribute_;
+	
 	// parameters needed to properly set viewing frustum
 	float cameraZ_;
 	float fov_ = 60.0f;
@@ -327,6 +336,12 @@ public class Process extends Thread {
 		if(c.command.equals("fe"))
 		{
 			if(debug_) print("Received FE");
+			
+			if(c.atts != null)
+			{
+				receivedAttributes_ = true;
+				attribute_ = c.atts;
+			}
 
 			notified_.set(true);
 			synchronized(pApplet_)
@@ -342,6 +357,14 @@ public class Process extends Thread {
 		// create frame event command
 		Command command = new Command();
 		command.command = "fe";
+		
+		if(sendAttributes_)
+			command.atts = attribute_;
+		else command.atts = null;
+		
+		// we have appended the attribute to the command, and can now set it back to false such that repeated
+		// messages are not sent
+		sendAttributes_ = false;
 		
 		for(int i = 0; i < clients_.size(); i++)
 		{
@@ -371,6 +394,36 @@ public class Process extends Thread {
 	public boolean getDebug()
 	{
 		return debug_;
+	}
+	
+	// the sketch requested that the attributes be sent to all other processes
+	// note, interaction intended to occur on leader process, for other interaction use
+	// asynchronous client
+	public void broadcast(String attribute)
+	{
+		sendAttributes_ = true;
+		attribute_ = attribute;
+	}
+	
+	// returns true if the last FE message was received with non-null atts
+	public boolean messageReceived()
+	{
+		return receivedAttributes_;
+	}
+	
+	// returns the attributes that were received from the leader
+	public String getMessage()
+	{
+		if(receivedAttributes_)
+		{
+			receivedAttributes_ = false;
+			return attribute_;
+		}
+		else
+		{
+			print("No attributes were received! Check w/ messageReceived() first!");
+			return null;
+		}		
 	}
 
 }

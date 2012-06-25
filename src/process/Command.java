@@ -12,6 +12,6 @@ public class Command implements Serializable {
 	
 	public
 		String command;
-		//Vector atts;
+		String atts;
 
 }

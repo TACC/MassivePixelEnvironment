@@ -1,5 +1,7 @@
 package mpe.examples;
 
+//import java.util.Vector;
+
 import mpe.process.Configuration;
 import mpe.process.Process;
 import processing.core.PApplet;
@@ -46,6 +48,19 @@ public class Toroid extends PApplet {
 	
 	public void draw()
 	{
+		
+		// have we received a message from the leader process?
+		if(process.messageReceived())
+		{
+			// get the message from the leader
+			String mode = process.getMessage();
+			
+			if(mode.equals("h"))
+				isHelix = !isHelix;
+			if(mode.equals("w"))
+				isWireFrame = !isWireFrame;
+		}
+		
 		background(50, 64, 42);
 		  // basic lighting setup
 		  lights();
@@ -111,7 +126,17 @@ public class Toroid extends PApplet {
 		    }
 		    endShape();
 		  }
+	}
+	
+	// upon keypress, capture the keypress and broadcast it to all other processes
+	public void keyPressed()
+	{
+		if(key == 'w')
+			isWireFrame = !isWireFrame;
+		else if(key == 'h')
+			isHelix = !isHelix;
 		
+		process.broadcast(Character.toString(key));
 	}
 
 }
