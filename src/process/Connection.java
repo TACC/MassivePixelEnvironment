@@ -75,17 +75,9 @@ public class Connection extends Thread {
 			followerState_.ready();
 			if(followerState_.allReady())
 			{
-				followerState_.notifiedTrue();
-				synchronized(followerState_)
-				{
-					if(process_.getDebug()) process_.print("Notifying follower state.");
-					
-					// reset the follower state ready flag, and notify main thread that all followers have reported
-					followerState_.setNoneReady();
-					followerState_.notify();
-				}
+				followerState_.setNoneReady();
+				followerState_.release();
 			}
-			
 		}
 	}
 

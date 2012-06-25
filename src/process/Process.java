@@ -7,6 +7,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Vector;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 //we need to access processing from this class
@@ -50,6 +51,12 @@ public class Process extends Thread {
 	// are we in debug mode?
 	boolean debug_ = false;
 	
+	// this is the object on which the framelock is based
+	private final Semaphore frameLock_ = new Semaphore(1);
+	
+	// a lock telling us when all clients are ready
+	private final Semaphore followerLock_ = new Semaphore(1);
+	
 	// have we notified?
 	AtomicBoolean notified_;
 	
@@ -86,14 +93,15 @@ public class Process extends Thread {
 		debug_ = config_.getDebug();
 		
 		// create the followerState, which keeps track of how many renderers have rendered and are waiting
-		followerState_ = new FollowerState(config_.getNumFollowers());
+		followerState_ = new FollowerState(config_.getNumFollowers(), followerLock_);
 		if(debug_) print("Number of followers: " + config_.getNumFollowers());
 		
 		// is this a 3D (P3D/OpenGL/GLGraphics) or 2D (P2D) sketch?
 		enable3D_ = pApplet_.g instanceof PGraphics3D;
 		
 		// set the Z location of the camera
-		cameraZ_ = (pApplet_.height/2.0f) / PApplet.tan(PConstants.PI * fov_/360.0f);
+		//cameraZ_ = (pApplet_.height/2.0f) / PApplet.tan(PConstants.PI * fov_/360.0f);
+		cameraZ_ = (config_.getMasterDim()[1]/2.0f) / PApplet.tan(PConstants.PI * fov_/360.0f);
 		
 		// after the sketch calls draw, it will call the draw method in this class
 		pApplet_.registerDraw(this);
@@ -109,33 +117,24 @@ public class Process extends Thread {
 	// this call is made before the draw command
 	public void pre()
 	{
+		// do some frame locking here
+		
+		// wait on framelock to be unlocked
+		try {
+			frameLock_.acquire();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		if(debug_) print("Aquired framelock!");
+		
 		placeScreen();
+		
 	}
 	
 	public void draw()
 	{
-		
-		if(debug_) print("About to wait on framelock");
-		
-		synchronized(pApplet_)
-		{
-			// only wait if we haven't received a FE message yet
-			if(!notified_.get())
-			{
-				if(debug_) print("In a wait");
-				try {
-					pApplet_.wait();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-		
-		notified_.set(false);
-		
-		if(debug_) print("framelock ready!");
-		
 		// send end-of-frame message if not leader
 		if(!config_.isLeader())
 			endFrame();
@@ -211,8 +210,9 @@ public class Process extends Thread {
 	    	
 	    	if(debug_) print("All clients have connected. Start event loop");
 	    	
-	    	// broadcast an initial frame event to the followers
-	    	broadcastFE();
+	    	// broadcast an initial frame event and aquire followerState semaphore so we don't get stuck
+	    	followerState_.aquire();
+	    	//broadcastFE();
 	    	
 		}
 		
@@ -229,29 +229,13 @@ public class Process extends Thread {
 			if(config_.isLeader())
 			{
 				
-				if(debug_) print("Waiting on followerState");
-				synchronized(followerState_)
-				{
-					if(!followerState_.notified())
-					{
-						// wait for followerState notification that all followers have reported
-						try {
-							followerState_.wait();
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-					followerState_.notifiedFalse();
-				}
-				notified_.set(true);
+				// here we want to wait on the followerState_
+				followerState_.aquire();
 				
-				synchronized(pApplet_)
-				{
-					pApplet_.notify();
-				}
+				// once followerstate is allReady() you can give a permit to the framelock
+				frameLock_.release();
 				
-				notified_.set(false);
+				// broadcast the FE message to all followers not that we've rendered
 				broadcastFE();
 				
 			}
@@ -325,6 +309,7 @@ public class Process extends Thread {
         float near   = cameraZ_*mod;
         float far    = 10000;
         pApplet_.frustum(left,right,top,bottom,near,far);
+        pApplet_.getMatrix();
 	}
 	
 	// simply offsets the screen in space
@@ -341,18 +326,15 @@ public class Process extends Thread {
 		{
 			if(debug_) print("Received FE");
 			
+			// release the framelock
+			frameLock_.release();
+			
 			if(c.atts != null)
 			{
 				receivedAttributes_ = true;
 				attribute_ = c.atts;
 			}
 
-			notified_.set(true);
-			synchronized(pApplet_)
-			{
-				pApplet_.notify();
-				//notified_.set(false);
-			}
 		}
 	}
 	
