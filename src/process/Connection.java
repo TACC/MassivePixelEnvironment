@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.concurrent.BrokenBarrierException;
 
 public class Connection extends Thread {
 	
@@ -71,12 +72,17 @@ public class Connection extends Thread {
 		if(command.command.equals("ef"))
 		{
 			if(process_.getDebug()) process_.print("Received EF.");
-			
+
 			followerState_.ready();
-			if(followerState_.allReady())
-			{
-				followerState_.setNoneReady();
-				followerState_.release();
+			
+			try {
+				process_.barrier_.await();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (BrokenBarrierException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 	}
