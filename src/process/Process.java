@@ -7,6 +7,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Vector;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -51,11 +53,13 @@ public class Process extends Thread {
 	// are we in debug mode?
 	boolean debug_ = false;
 	
-	// this is the object on which the framelock is based
-	private final Semaphore frameLock_ = new Semaphore(1);
+	// this is the object on which synchronization is based
+	private final FrameLock frameLock_ = new FrameLock();
 	
-	// a lock telling us when all clients are ready
-	private final Semaphore followerLock_ = new Semaphore(1);
+	// a lock telling us when all clients are ready, used only by leader
+	//public final FrameLock leaderLock_ = new FrameLock();
+	
+	public final CyclicBarrier barrier_;
 	
 	// have we notified?
 	AtomicBoolean notified_;
@@ -93,7 +97,7 @@ public class Process extends Thread {
 		debug_ = config_.getDebug();
 		
 		// create the followerState, which keeps track of how many renderers have rendered and are waiting
-		followerState_ = new FollowerState(config_.getNumFollowers(), followerLock_);
+		followerState_ = new FollowerState(config_.getNumFollowers());
 		if(debug_) print("Number of followers: " + config_.getNumFollowers());
 		
 		// is this a 3D (P3D/OpenGL/GLGraphics) or 2D (P2D) sketch?
@@ -107,30 +111,25 @@ public class Process extends Thread {
 		pApplet_.registerDraw(this);
 		pApplet_.registerPre(this);
 		
-		if(debug_)
-			config_.printSettings();
+		barrier_ = new CyclicBarrier(config_.numFollowers_ + 1);
+		
+		config_.printSettings();
 		
 		running_ = true;
-		
 	}
 	
 	// this call is made before the draw command
 	public void pre()
 	{
-		// do some frame locking here
+		if(debug_) print("Trying to acquire framelock!");
+
 		
 		// wait on framelock to be unlocked
-		try {
-			frameLock_.acquire();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		if(debug_) print("Aquired framelock!");
+		frameLock_.acquire();
+
+		if(debug_) print("Acquired framelock!");
 		
 		placeScreen();
-		
 	}
 	
 	public void draw()
@@ -171,7 +170,7 @@ public class Process extends Thread {
 				}
 			}
 		}
-		
+
 		// we are the leader, create connection listener(s)
 		if(config_.isLeader())
 		{
@@ -181,14 +180,14 @@ public class Process extends Thread {
 			// set listener for all connections
 	        ServerSocket listener = null;
 	    	Socket followerSocket = null;
-	    	
+
 	    	try {
 				listener = new ServerSocket(config_.getPort());
 			} catch (IOException e) {
 				System.out.println("Unable to listen on port " + config_.getPort() + " , quitting.");
 				System.exit(-1);
 			}
-	    	    	
+
 	    	// whenever a new connection is made, create a handler thread
 	    	while(!followerState_.allConnected())
 	    	{
@@ -199,47 +198,53 @@ public class Process extends Thread {
 					System.out.println("Unable to accept connection!");
 				}
 	    		
-	    		// new client, decrement count
+	    		// new client, so increment the counter of the number of connected
 	    		followerState_.incrementConnected();
 	    		
 	    		// create a new connection object for this client and run communication in a separate thread
 	    		Connection conn = new Connection(followerSocket, followerState_, this);
 	    		conn.start();
+	    		
+	    		// add the client to the clients vectors, so that we can later broadcast, etc.
 	    		clients_.add(conn);
 	    	}
 	    	
 	    	if(debug_) print("All clients have connected. Start event loop");
 	    	
-	    	// broadcast an initial frame event and aquire followerState semaphore so we don't get stuck
-	    	followerState_.aquire();
-	    	//broadcastFE();
-	    	
 		}
 		
+		// calls the run() command based on Java thread semantics
 		super.start();
 	}
 	
 	// main loop for this thread
 	public void run()
 	{
-		
 		while(running_)
 		{
 			// wait for all followers to be ready and broadcast msg to render
 			if(config_.isLeader())
 			{
 				
-				// here we want to wait on the followerState_
-				followerState_.aquire();
+				try {
+					barrier_.await();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (BrokenBarrierException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				
-				// once followerstate is allReady() you can give a permit to the framelock
+				barrier_.reset();
+				
+				// release the framelock so master can render
 				frameLock_.release();
-				
-				// broadcast the FE message to all followers not that we've rendered
+									
+				// send a FE message to all clients so they render the next scene
 				broadcastFE();
-				
 			}
-			
+
 			// we are a follower and we should receive a msg
 			else
 			{
@@ -277,14 +282,14 @@ public class Process extends Thread {
 	
 	public int getMHeight()
 	{
-		return config_.getMasterDim()[0];
+		return config_.getMasterDim()[1];
 	}
 	
 	/*
 	 * Begin private methods
 	 */
 	
-	private void placeScreen()
+	public void placeScreen()
 	{
 		if(enable3D_)
 			placeScreen3D();
@@ -296,20 +301,36 @@ public class Process extends Thread {
 	private void placeScreen3D()
 	{
 		
+		/*
+		 * This is tough.
+		 * 
+		 * Processing flips the Y coordinate in OpenGL vs. P3D, first of all.
+		 * We wont be using P3D, so this shouldn't matter, the resolutions in question
+		 * preclude the use of anything but OpenGL.
+		 */
+		
 		pApplet_.camera(config_.getMasterDim()[0]/2.0f, config_.getMasterDim()[1]/2.0f, cameraZ_,
 				config_.getMasterDim()[0]/2.0f, config_.getMasterDim()[1]/2.0f, 0, 
                 0, 1, 0);
-        
 		
-		float mod = 1f/10f;
+		// Frustum information assuming X = 0 @ top left, and Y = 0 @ top left
+        /* from my processing work
+		  float left = offsetX - mX/2;
+		  float right = (offsetX + lX) - mX/2;
+		  float top = offsetY - mY/2;
+		  float bottom = (offsetY + lY) - mY/2;
+		  float near = cameraZ;
+		  float far = 1000;
+		*/ 
+		float mod = 0.1f;
         float left   = (config_.getOffsets()[0] - config_.getMasterDim()[0]/2)*mod;
-        float right  = (config_.getOffsets()[0] + config_.getLocalDim()[0] - config_.getMasterDim()[0]/2)*mod;
-        float top = (config_.getOffsets()[1] + config_.getLocalDim()[1]-config_.getMasterDim()[1]/2)*mod;
-        float bottom = (config_.getOffsets()[1] - config_.getMasterDim()[1]/2)*mod;
+        float right  = ((config_.getOffsets()[0] + config_.getLocalDim()[0]) - config_.getMasterDim()[0]/2)*mod;
+        float top = (config_.getOffsets()[1] - config_.getMasterDim()[1]/2)*mod;
+        float bottom = ((config_.getOffsets()[1] + config_.getLocalDim()[1]) - config_.getMasterDim()[1]/2)*mod;
         float near   = cameraZ_*mod;
-        float far    = 10000;
+        float far    = 1000;
         pApplet_.frustum(left,right,top,bottom,near,far);
-        pApplet_.getMatrix();
+        
 	}
 	
 	// simply offsets the screen in space
@@ -318,7 +339,7 @@ public class Process extends Thread {
 		pApplet_.translate(config_.getOffsets()[0] * -1, config_.getOffsets()[1] * -1);
 	}
 	
-	// TODO: handle input as well here
+	// reads the command from the leader, releases the frameLock if the FE command was sent
 	private void readCommand(Command c)
 	{
 		// received a frame event command from server, unlock framelock object
@@ -334,7 +355,6 @@ public class Process extends Thread {
 				receivedAttributes_ = true;
 				attribute_ = c.atts;
 			}
-
 		}
 	}
 	
