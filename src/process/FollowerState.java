@@ -1,7 +1,5 @@
 package mpe.process;
 
-import java.util.concurrent.Semaphore;
-
 public class FollowerState {
 
 	private int numFollowers_;
@@ -14,10 +12,8 @@ public class FollowerState {
 	
 	// have we been notified?
 	private boolean notified_ = false;
-	
-	public Semaphore followerLock_;
-	
-	public FollowerState(int numFollowers, Semaphore lock) 
+		
+	public FollowerState(int numFollowers) 
 	{
 		numFollowers_ = numFollowers;
 		
@@ -26,7 +22,6 @@ public class FollowerState {
 		
 		numReady_ = 0;
 		
-		followerLock_ = lock;
 	}
 	
 	public synchronized boolean allConnected()
@@ -72,21 +67,6 @@ public class FollowerState {
 	public synchronized void notifiedFalse()
 	{
 		notified_ = false;
-	}
-
-	// wait until the followerState semaphore is ready
-	public void aquire() {
-		try {
-			followerLock_.acquire();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
-	public void release()
-	{
-		followerLock_.release();
 	}
 	
 }
