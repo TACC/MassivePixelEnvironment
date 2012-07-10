@@ -1,4 +1,4 @@
-package mpe.process;
+package mpe.library;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -9,7 +9,6 @@ import java.net.UnknownHostException;
 import java.util.Vector;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 //we need to access processing from this class
@@ -18,6 +17,8 @@ import processing.core.PConstants;
 import processing.core.PGraphics3D;
 
 public class Process extends Thread {
+	
+	public final static String VERSION = "0.1.1";
 	
 	// contains identifier and screen-space info for this process
 	Configuration config_; 
@@ -56,9 +57,7 @@ public class Process extends Thread {
 	// this is the object on which synchronization is based
 	private final FrameLock frameLock_ = new FrameLock();
 	
-	// a lock telling us when all clients are ready, used only by leader
-	//public final FrameLock leaderLock_ = new FrameLock();
-	
+	// the cyclic barrier servers as a barrier synchronization for all render clients
 	public final CyclicBarrier barrier_;
 	
 	// have we notified?
@@ -328,7 +327,7 @@ public class Process extends Thread {
         float top = (config_.getOffsets()[1] - config_.getMasterDim()[1]/2)*mod;
         float bottom = ((config_.getOffsets()[1] + config_.getLocalDim()[1]) - config_.getMasterDim()[1]/2)*mod;
         float near   = cameraZ_*mod;
-        float far    = 1000;
+        float far    = 10000;
         pApplet_.frustum(left,right,top,bottom,near,far);
         
 	}

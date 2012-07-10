@@ -1,7 +1,6 @@
-package mpe.process;
+package mpe.library;
 
 import java.io.Serializable;
-//import java.util.Vector;
 
 public class Command implements Serializable {
 	
