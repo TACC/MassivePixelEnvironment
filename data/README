@@ -1,0 +1,4 @@
+This folder contains example configuration files for specifying the layout of the distributed display environment.
+
+The configuration.xml file is a layout for a four process distributed display and is intended to run on a single computer as an example.
+The configuration_stallion.xml file is a layout for the 75-screen Stallion tiled display at the Texas Advanced Computing Center Visualization Laboratory.
