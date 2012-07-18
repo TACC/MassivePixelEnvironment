@@ -1,4 +1,4 @@
 MPE-ClusterEdition
 ==================
 
-Most Pixels Ever. Developed for Clusters and Tiled Displays!
+MostPixelsEver Cluster Edition - A Processing library for extending sketches across distributed display environments.
