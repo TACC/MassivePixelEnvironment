@@ -1,5 +1,10 @@
 package mpe;
 
+/**
+ * Used as a shared object to determine whether all connected processes are ready to render.
+ * @author Brandt Westing TACC
+ *
+ */
 public class FollowerState {
 
 	private int numFollowers_;

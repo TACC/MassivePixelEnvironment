@@ -16,6 +16,11 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics3D;
 
+/**
+ * This class is used as a communication thread to synchronize events between other processing processes.
+ * @author Brandt Westing TACC
+ *
+ */
 public class Process extends Thread {
 	
 	public final static String VERSION = "0.1.1";
@@ -88,7 +93,11 @@ public class Process extends Thread {
 	 * Begin public methods
 	 */
 	
-	// concrete constructor
+	/**
+	 * Constructor.
+	 * 
+	 * @param config The configuration file for the tile configuration.
+	 */
 	public Process(Configuration config)
 	{
 		pApplet_ = config.getApplet();
@@ -120,7 +129,9 @@ public class Process extends Thread {
 		running_ = true;
 	}
 	
-	// this call is made before the draw command
+	/**
+	 * Registered with the PApplet pre() function and called before each draw loop.
+	 */
 	public void pre()
 	{
 		if(debug_) print("Trying to acquire framelock!");
@@ -134,6 +145,9 @@ public class Process extends Thread {
 		placeScreen();
 	}
 	
+	/**
+	 * Registered with the PApplet draw() function and called after each draw loop.
+	 */
 	public void draw()
 	{
 		// send end-of-frame message if not leader
@@ -141,6 +155,9 @@ public class Process extends Thread {
 			endFrame();
 	}
 	
+	/**
+	 * Starts the communication thread.
+	 */
 	public void start()
 	{
 		// we are just a follower, just register with leader
@@ -227,7 +244,9 @@ public class Process extends Thread {
 		super.start();
 	}
 	
-	// main loop for this thread
+	/**
+	 * Called automagically by start().
+	 */
 	public void run()
 	{
 		while(running_)
@@ -275,11 +294,21 @@ public class Process extends Thread {
 		}
 	}
 	
+	/**
+	 * Gets the pixel width of the local display.
+	 * 
+	 * @return The pixel width of the local display.
+	 */
 	public int getLWidth()
 	{
 		return config_.getLocalDim()[0];
 	}
 	
+	/**
+	 * Gets the pixel height of the local display.
+	 * 
+	 * @return The pixel height of the local display.
+	 */
 	public int getLHeight()
 	{
 		return config_.getLocalDim()[1];
@@ -295,29 +324,36 @@ public class Process extends Thread {
 		return config_.getMasterDim()[1];
 	}
 	
-	/*
-	 * Begin private methods
+	/**
+	 * Disables MPE camera placement at each draw. Used for libraries such as PeasyCam, etc.
 	 */
-	
-	public void placeScreen()
-	{
-		if(enable3D_)
-			placeScreen3D();
-		else
-			placeScreen2D();
-	}
-	
 	public void disableCameraReset()
 	{
 		placeCamera_ = false;
 	}
 	
+	/**
+	 * Allows the user to manually set the field of view of the camera.
+	 * @param fov The desired field of view in degrees.
+	 */
 	public void setFOV(float fov)
 	{
 		fov_ = fov;
 		cameraZ_ = (config_.getMasterDim()[1]/2.0f) / PApplet.tan(PConstants.PI * fov_/360.0f);
 	}
 	
+	/*
+	 * Begin private methods
+	 */
+	
+	private void placeScreen()
+	{
+		if(enable3D_)
+			placeScreen3D();
+		else
+			placeScreen2D();
+	}
+
 	// computes the correct viewing frustum for the perspective view
 	private void placeScreen3D()
 	{
@@ -428,6 +464,10 @@ public class Process extends Thread {
 	// the sketch requested that the attributes be sent to all other processes
 	// note, interaction intended to occur on leader process, for other interaction use
 	// asynchronous client
+	/**
+	 * Broadcasts the object(s) to all client processes.
+	 * @param attribute The object to broadcast. Can be casted to any object.
+	 */
 	public void broadcast(Object attribute)
 	{
 		sendAttributes_ = true;
@@ -435,12 +475,20 @@ public class Process extends Thread {
 	}
 	
 	// returns true if the last FE message was received with non-null atts
+	/**
+	 * Determines if a message has been received since last frame draw.
+	 * @return True if a message has been received since last frame draw.
+	 */
 	public boolean messageReceived()
 	{
 		return receivedAttributes_;
 	}
 	
 	// returns the attributes that were received from the leader
+	/**
+	 * If a message has been received, returns the message.
+	 * @return The message that has been received. Cast to the desired object.
+	 */
 	public Object getMessage()
 	{
 		if(receivedAttributes_)

@@ -5,6 +5,11 @@ import java.net.UnknownHostException;
 import processing.core.PApplet;
 import processing.xml.XMLElement;
 
+/**
+ * An object that encapsulates the configuration context of the display system.
+ * @author Brandt Westing TACC
+ *
+ */
 public class Configuration {
 
 	private PApplet applet_;

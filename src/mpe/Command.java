@@ -2,6 +2,11 @@ package mpe;
 
 import java.io.Serializable;
 
+/**
+ * Serializable communication object used between processes.
+ * @author Brandt Westing TACC
+ *
+ */
 public class Command implements Serializable {
 	
 	/**

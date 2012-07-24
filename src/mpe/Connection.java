@@ -6,6 +6,11 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.concurrent.BrokenBarrierException;
 
+/**
+ * Wraps a TCP connection.
+ * @author Brandt Westing TACC
+ *
+ */
 public class Connection extends Thread {
 	
 	Socket socket_;
