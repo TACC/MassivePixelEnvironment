@@ -5,6 +5,10 @@ MostPixelsEver Cluster Edition - A Processing library for extending sketches acr
 
 # Getting Started:
 
+![Screenshot](https://lh6.googleusercontent.com/-FQe3TEUKN9s/UA8WGVjR1kI/AAAAAAAABaI/0VGCoprnw5Y/s200/IMG_0858.jpg)  ![Screenshot](https://lh3.googleusercontent.com/-aVL8RqSPwyo/UA8WGdDq8iI/AAAAAAAABaM/_HffyfeCVKE/s225/IMG_0859.jpg
+)
+
+
 Check out the tutorials on the wiki!
 
 [MostPixelsEver-Cluster Wiki](https://github.com/bmwesting/MPE-ClusterEdition/wiki/MostPixelsEver-HowTo)
