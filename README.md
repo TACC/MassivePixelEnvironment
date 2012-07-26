@@ -14,4 +14,4 @@ Check out the tutorials on the wiki!
 
 Please see the project website for downloads: 
 
-[MPE Cluster Processing Project Page](http://www.tacc.utexas.edu/tacc-software/mostpixelsever)
+[MPE Cluster Processing Project Page](http://tacc-web.austin.utexas.edu/staff/home/bwesting/mpe/)
