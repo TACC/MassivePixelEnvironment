@@ -12,10 +12,7 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 //we need to access processing from this class
-import processing.core.PApplet;
-import processing.core.PConstants;
-import processing.core.PGraphics3D;
-
+import processing.core.*;
 /**
  * This class is used as a communication thread to synchronize events between other processing processes.
  * @author Brandt Westing TACC
@@ -23,7 +20,7 @@ import processing.core.PGraphics3D;
  */
 public class Process extends Thread {
 	
-	public final static String VERSION = "0.1.1";
+	public final static String VERSION = "##version##";
 	
 	// contains identifier and screen-space info for this process
 	Configuration config_; 
@@ -112,7 +109,7 @@ public class Process extends Thread {
 		if(debug_) print("Number of followers: " + config_.getNumFollowers());
 		
 		// is this a 3D (P3D/OpenGL/GLGraphics) or 2D (P2D) sketch?
-		enable3D_ = pApplet_.g instanceof PGraphics3D;
+		enable3D_ = true;
 		
 		// set the Z location of the camera
 		//cameraZ_ = (pApplet_.height/2.0f) / PApplet.tan(PConstants.PI * fov_/360.0f);
@@ -502,5 +499,4 @@ public class Process extends Thread {
 			return null;
 		}		
 	}
-
 }
