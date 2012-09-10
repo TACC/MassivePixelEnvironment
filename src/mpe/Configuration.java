@@ -2,8 +2,12 @@ package mpe;
 
 import java.net.UnknownHostException;
 
+// XML parser library includes
+import xmlcomponents.Jocument;
+import xmlcomponents.Jode;
+
 import processing.core.PApplet;
-import processing.xml.XMLElement;
+import processing.core.PConstants;
 
 /**
  * An object that encapsulates the configuration context of the display system.
@@ -38,10 +42,10 @@ public class Configuration {
 		this("configuration.xml", p);
 	}
 
-	public Configuration(String file, PApplet p)
+	public Configuration(String _file, PApplet _p)
 	{
 		// the processing applet that we are taking care of!
-		applet_ = p;
+		applet_ = _p;
 		
 		tileRes_   = new int[2];
 		numTiles_  = new int[2];
@@ -49,8 +53,14 @@ public class Configuration {
 		localDim_  = new int[2];
 		masterDim_ = new int[2];
 		offsets_   = new int[2];
-		XMLElement xml, child;
 		
+		// set up the pipeline for reading XML
+		
+		Jode root = null;
+		root = Jocument.load(_file);
+		
+		System.out.println(root.name());
+						
 		// my DISPLAY identifier
 		display_ = System.getenv("DISPLAY");
 		
@@ -65,58 +75,54 @@ public class Configuration {
 		} catch (UnknownHostException e) {
 			System.out.println("I can't determine my hostname!");
 		}
-
-		xml = new XMLElement(p, file);
-		child = xml.getChild("dimensions");
-		tileRes_[0]   = child.getInt("screenWidth");
-		tileRes_[1]   = child.getInt("screenHeight");
-		numTiles_[0]  = child.getInt("numTilesWidth");
-		numTiles_[1]  = child.getInt("numTilesHeight");
-		bezels_[0]    = child.getInt("mullionWidth");
-		bezels_[1]    = child.getInt("mullionHeight");
-		debug_ = child.getInt("debug") == 1;
 		
-		// subtract 2 because there are entries for the head and the description
-		numFollowers_ = xml.getChildCount() - 2;
+		Jode config = root.single("configuration");
+		Jode dimensions = config.single("dimensions");
+		tileRes_[0]   = Integer.parseInt(dimensions.attribute("screenWidth").v);
+		tileRes_[1]   = Integer.parseInt(dimensions.attribute("screenHeight").v);
+		numTiles_[0]  = Integer.parseInt(dimensions.attribute("numTilesWidth").v);
+		numTiles_[1]  = Integer.parseInt(dimensions.attribute("numTilesHeight").v);
+		bezels_[0]    = Integer.parseInt(dimensions.attribute("mullionWidth").v);
+		bezels_[1]    = Integer.parseInt(dimensions.attribute("mullionHeight").v);
+		debug_ = Integer.parseInt(dimensions.attribute("debug").v) == 1;
 		
-		// get the server
-		for(int i = 0; i < xml.getChildCount(); i++)
+		numFollowers_ = config.children().getLength() - 2;
+		
+		Jode head = config.first("head");
+		
+		if(head != null)
 		{
-			child = xml.getChild(i);
-			String nodeName = child.getName();
-			if(nodeName.equals("head"))
-			{
-				server_ = child.getString("host");
-				port_ = Integer.valueOf(child.getString("port"));
-				System.out.println("Server: "+server_ + ":" + Integer.toString(port_));
-			}
+			server_ = head.attribute("host").v;
+			port_ = Integer.parseInt(head.attribute("port").v);
+			System.out.println("Server: "+ server_ + ":" + Integer.toString(port_));
 		}
-		
-		
-		if(server_ == null)
+		else
 		{
 			System.out.println("Couldn't get head! Setting default.");
 			server_ = "localhost";
 		}
 		
+		Jode child = null;
+		
 		// our rank is defined in the environment, so we should search for that
 		if(rank_ != -1)
 		{
+			
 			// Find out if this process is the head process
-			for(int i = 0; i < xml.getChildCount(); i++)
+			for(int i = 0; i < config.children().getLength(); i++)
 			{
-				child = xml.getChild(i);
-				String nodeName = child.getName();
+				child = config.children().get(i);
+				String nodeName = child.n;
 				
 				// found the head child
 				if(nodeName.equals("head"))
 				{
 					// we are the head node
-					if(child.getInt("rank") == rank_)
+					if(Integer.parseInt(child.attribute("rank").v) == rank_)
 					{
-						XMLElement headChild = child.getChild(0); 
-						localDim_[0] = headChild.getInt("width");
-						localDim_[1] = headChild.getInt("height");
+						Jode headChild = child.first(); 
+						localDim_[0] = Integer.parseInt(headChild.attribute("width").v);
+						localDim_[1] = Integer.parseInt(headChild.attribute("height").v);
 						
 						masterDim_[0] = localDim_[0];
 						masterDim_[1] = localDim_[1];
@@ -131,11 +137,11 @@ public class Configuration {
 			}
 			
 			// find the entry for the correct host
-			for(int i = 0; i < xml.getChildCount(); i++)
+			for(int i = 1; i < config.children().getLength(); i++)
 			{
-				child = xml.getChild(i);
+				child = config.children().get(i);
 				
-				if(child.getInt("rank") == rank_)
+				if(Integer.parseInt(child.attribute("rank").v) == rank_)
 					break; // we found our xml entry!
 			}
 		}
@@ -143,22 +149,22 @@ public class Configuration {
 		// RANK env. variable was not set, resort to hostname lookup
 		else
 		{
-			System.out.println("RANK was not found in the environment, using hostname lookup");
+			System.out.println("RANK was not found in the environment, using hostname lookup. Try exporting RANK for each process in the future!");
 			// Find out if this process is the head process
-			for(int i = 0; i < xml.getChildCount(); i++)
+			for(int i = 0; i < config.children().getLength(); i++)
 			{
-				child = xml.getChild(i);
-				String nodeName = child.getName();
+				child = config.children().get(i);
+				String nodeName = child.n;
 				
 				// found the head child
 				if(nodeName.equals("head"))
 				{
 					// we are the head node
-					if(child.getString("host").equals(hostname))
+					if(child.attribute("host").v.equals(hostname))
 					{
-						XMLElement headChild = child.getChild(0); 
-						localDim_[0] = headChild.getInt("width");
-						localDim_[1] = headChild.getInt("height");
+						Jode headChild = child.first(); 
+						localDim_[0] = Integer.parseInt(headChild.attribute("width").v);
+						localDim_[1] = Integer.parseInt(headChild.attribute("width").v);
 						
 						masterDim_[0] = localDim_[0];
 						masterDim_[1] = localDim_[1];
@@ -174,11 +180,12 @@ public class Configuration {
 			}
 			
 			// find the entry for the correct host
-			for(int i = 0; i < xml.getChildCount(); i++)
+			for(int i = 1; i < config.children().getLength(); i++)
 			{
-				child = xml.getChild(i);
-				String host = child.getString("host");
-				String display = child.getString("display");
+				child = config.children().get(i);
+				String host = child.attribute("host").v;
+				String display = child.attribute("display").v;
+				
 				if(host != null)
 				{
 					if(host.equals(hostname) && display.equals(display_))
@@ -189,25 +196,31 @@ public class Configuration {
 			}
 		}
 		
-		// child corresponds to entry with the correct hostname here
-		XMLElement childi;
-		childi = child.getChild(0);
-		int mini = childi.getInt("i");
-		int maxi = childi.getInt("i");
-		int minj = childi.getInt("j");
-		int maxj = childi.getInt("j");
-		
-		for(int i = 0; i < child.getChildCount(); i++)
+		if(child == null)
 		{
-			childi = child.getChild(i);
-			if(childi.getInt("i") < mini)
-				mini = childi.getInt("i");
-			if(childi.getInt("i") > maxi)
-				maxi = childi.getInt("i");
-			if(childi.getInt("j") < minj)
-				minj = childi.getInt("j");
-			if(childi.getInt("j") > maxj)
-				maxj = childi.getInt("j");
+			System.out.println("ERROR: Couldn't find my entry in the configuration. Exiting.");
+			System.exit(-1);
+		}
+		
+		// child corresponds to entry with the correct hostname here
+		Jode childi;
+		childi = child.first();
+		int mini = Integer.parseInt(childi.attribute("i").v);
+		int maxi = Integer.parseInt(childi.attribute("i").v);
+		int minj = Integer.parseInt(childi.attribute("j").v);
+		int maxj = Integer.parseInt(childi.attribute("j").v);
+		
+		for(int i = 0; i < child.children().getLength(); i++)
+		{
+			childi = child.children().get(i);
+			if(Integer.parseInt(childi.attribute("i").v) < mini)
+				mini = Integer.parseInt(childi.attribute("i").v);
+			if(Integer.parseInt(childi.attribute("i").v) > maxi)
+				maxi = Integer.parseInt(childi.attribute("i").v);
+			if(Integer.parseInt(childi.attribute("j").v) < minj)
+				minj = Integer.parseInt(childi.attribute("j").v);
+			if(Integer.parseInt(childi.attribute("j").v) > maxj)
+				maxj = Integer.parseInt(childi.attribute("j").v);
 		}
 		
 		// this get the size of the monitor array for this host in screens
@@ -226,7 +239,8 @@ public class Configuration {
 		// offsets
 		offsets_[0] = (mini)*tileRes_[0] + mini*bezels_[0];
 		offsets_[1] = (minj)*tileRes_[1] + mini*bezels_[1];
-
+		
+		printSettings();
 	}
 	
 	public PApplet getApplet()
