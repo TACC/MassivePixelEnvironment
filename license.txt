@@ -1,4 +1,4 @@
-MostPixelEver Cluster Edition - A library for extending Processing sketches across distributed displays.
+MostPixelsEverCE - A library for extending Processing sketches across distributed displays.
 
 Part of the Processing project - http://processing.org
 

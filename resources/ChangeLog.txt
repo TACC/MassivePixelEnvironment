@@ -1,3 +1,7 @@
+2012-09-10  Brandt Westing
+      * version 0.2.0
+      * updated MostPixelsEver to support Processing 2.0b2
+      	* updated XML configuration parsing to use jinq2XML
 2012-07-18  Brandt Westing
       * version 0.1.1
       * original check-in
