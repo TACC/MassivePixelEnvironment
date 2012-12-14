@@ -1,4 +1,4 @@
-MostPixelEver: Cluster Edition
+MostPixelsEver: Cluster Edition
 ==================
 
 ![Screenshot](http://farm9.staticflickr.com/8350/8270827002_9ca2286d89_z.jpg) 
