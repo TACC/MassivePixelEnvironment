@@ -1,0 +1,69 @@
+#!/usr/bin/python
+
+# launcher for MostPixelsEverCE
+
+import os
+import sys
+import xml.etree.ElementTree as ET
+import subprocess
+import shlex
+import distutils.spawn
+
+if len(sys.argv) < 2:
+	print "Please specify a processing application as the argument."
+	exit(-2)
+
+# mpe directory; this is the parent directory of this script
+mpePath = os.path.dirname(os.path.abspath(__file__)) + '/'
+print 'mpepath: ' + mpePath
+
+# set an environment variable for the base DisplayCluster directory
+os.environ['MPE_DIR'] = mpePath
+
+customConfig = False
+for (counter, arg) in enumerate(sys.argv):
+	if arg == '-c':
+		configFile = mpePath + sys.argv[counter+1]
+		customConfig = True
+
+if customConfig == False:
+	configFile = mpePath + 'configuration.xml'
+
+print 'configFile: ' + configFile
+
+hostList = []
+displayList = []
+
+try:
+	tree = ET.parse(configFile)
+except:
+    print 'Error processing configuration.xml. Make sure you have created a configuration.xml and put it in ' + mpePath + '/.'
+    exit(-2)
+
+# rank 0 is always on head element
+elem = tree.find('head')
+host = elem.get('host')
+display = elem.get('display')
+if host is None or display is None:
+    print 'Error, no host or display attribute in <head> tag.'
+    exit(-1)
+hostList.append(host)
+displayList.append(display)
+
+# set all other processes
+for elemP in tree.findall('.//process'):
+	hostP = elemP.get('host')
+	displayP = elemP.get('display')
+	if host is None or display is None:
+		print 'Error, no host or display attribute in <process> tag.'
+		exit(-1)
+	hostList.append(hostP)
+	displayList.append(displayP)
+
+# iterate over hostlist, launching processes
+for idx,host in enumerate(hostList):
+	display = displayList[idx]
+	command = 'ssh ' + host + ' \"export DISPLAY=' + display + ' export RANK=' + str(idx) + ';sh ' + sys.argv[1] + '\" &'
+	print "exec: " + command
+	subprocess.Popen(shlex.split(command))
+
