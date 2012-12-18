@@ -15,7 +15,7 @@ In MPE:
 * [MPE Simple Guide](https://github.com/TACC/MostPixelsEverCE/wiki/MostPixelsEver-HowTo)
 
 ## Other Links
-* [MPE Cluster Processing Project Page](http://www.tacc.utexas.edu/tacc-software/most-pixels-ever-cluster-edition)
+* [MPE: CE Project Page](http://www.tacc.utexas.edu/tacc-software/most-pixels-ever-cluster-edition)
 * [MPE: CE Paper/Abstract](https://dl.dropbox.com/u/6676512/VisualizationLaboratory/Posters/mpe-poster-visweek.pdf)
 
 ## Credits
