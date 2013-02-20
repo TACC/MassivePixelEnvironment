@@ -22,4 +22,8 @@ In MPE:
 
 ![Screenshot](http://farm9.staticflickr.com/8059/8285495490_53017a844a_o.png)
 
-This work was made possible by funding from  the National Endowment for the Humanities (NEH) Grant:  HD-51475-11, A [Thousand Words: Advanced Visualization for the Humanities](http://www.tacc.utexas.edu/tacc-projects/a-thousand-words).
+This work was made possible by funding from the National Endowment for the Humanities (NEH) Grant:HD-51475-11, A [Thousand Words: Advanced Visualization for the Humanities](http://www.tacc.utexas.edu/tacc-projects/a-thousand-words).
+
+## Awards and News
+
+![Screenshot](http://farm9.staticflickr.com/8366/8491717055_476f79f51d.jpg)
