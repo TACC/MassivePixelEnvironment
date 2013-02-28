@@ -3,6 +3,8 @@ MostPixelsEver: Cluster Edition
 
 ![Screenshot](http://farm9.staticflickr.com/8350/8270827002_9ca2286d89_z.jpg) 
 
+Get the latest version [here](https://sourceforge.net/projects/mostpixelseverc/files/latest/download)!
+
 MostPixelsEver: Cluster Edition (MPE) is a [Processing](http://processing.org/) library for easily extending sketches to distributed display environments. MPE was developed at the [Texas Advanced Computing Center](http://www.tacc.utexas.edu/tacc-projects/a-thousand-words) and aims to make it easy to prototype visualizations for otherwise difficult to use distributed systems. MPE is compatible with the lastest Processing versions and supports full compatibility with advanced featuresets of OpenGL.
 
 In MPE:
