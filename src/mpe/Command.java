@@ -2,6 +2,9 @@ package mpe;
 
 import java.io.Serializable;
 
+//import processing.event.KeyEvent;
+//import processing.event.MouseEvent;
+
 /**
  * Serializable communication object used between processes.
  * @author Brandt Westing TACC
@@ -17,5 +20,6 @@ public class Command implements Serializable {
 	public
 		String command;
 		Object att;
-
+		//MouseEvent m;
+		//KeyEvent k;
 }

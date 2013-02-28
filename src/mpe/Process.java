@@ -13,14 +13,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 //we need to access processing from this class
 import processing.core.*;
+//import processing.event.KeyEvent;
+//import processing.event.MouseEvent;
+
 /**
  * This class is used as a communication thread to synchronize events between other processing processes.
  * @author Brandt Westing TACC
  *
  */
+
 public class Process extends Thread {
 	
 	public final static String VERSION = "##version##";
+	public static long start;
+	public static long end;
+	public static long elapsed;
 	
 	// contains identifier and screen-space info for this process
 	Configuration config_; 
@@ -77,14 +84,21 @@ public class Process extends Thread {
 	// this is the actual object that will be sent along with the FE message
 	Object attribute_;
 	
+	// mouse and keyboard events sent every frame
+	//MouseEvent mouseEvent_ = null;
+	//KeyEvent keyEvent_ = null;
+	
 	// parameters needed to properly set viewing frustum
 	float cameraZ_;
-	float fov_ = 60.0f;
+	float fov_ = 45.0f;
 	
 	// socket if the process is a follower, and complementary streams
 	Socket processSocket_;
 	ObjectInputStream ois_;
 	ObjectOutputStream oos_;
+	
+	// by default, do not serialize mouse and keyboard events (they are not serializable yet) //todo
+	//boolean enableDefaultSerialization_ = false;
 	
 	/*
 	 * Begin public methods
@@ -110,14 +124,16 @@ public class Process extends Thread {
 		
 		// is this a 3D (P3D/OpenGL/GLGraphics) or 2D (P2D) sketch?
 		enable3D_ = true;
-		
+				
 		// set the Z location of the camera
-		//cameraZ_ = (pApplet_.height/2.0f) / PApplet.tan(PConstants.PI * fov_/360.0f);
-		cameraZ_ = (config_.getMasterDim()[1]/2.0f) / PApplet.tan(PConstants.PI * fov_/360.0f);
+		cameraZ_ = (config_.getMasterDim()[1]/2.0f) / PApplet.tan(PConstants.PI * fov_/180.0f);
 		
 		// after the sketch calls draw, it will call the draw method in this class
 		pApplet_.registerDraw(this);
 		pApplet_.registerPre(this);
+		
+		// by default, automatically serialize mouse and keyboard events
+		
 		
 		barrier_ = new CyclicBarrier(config_.numFollowers_ + 1);
 		
@@ -153,10 +169,41 @@ public class Process extends Thread {
 	}
 	
 	/**
+	 * Registered with the PApplet mouseEvent() function and called when mouse interaction occurs.
+	 */
+	/*
+	public void mouseEvent(MouseEvent e)
+	{
+		// create mouseEvent object
+		mouseEvent_ = e;
+	}
+	*/
+	/**
+	 * Registered with the PApplet keyEvent() function and called when keyboard interaction occurs.
+	 */
+	/*
+	public void keyEvent(KeyEvent e)
+	{
+		// create mouseEvent object
+		keyEvent_ = e;
+	}
+	*/
+	/**
 	 * Starts the communication thread.
 	 */
 	public void start()
 	{
+		/*
+		if(enableDefaultSerialization_)
+		{
+			//pApplet_.registerMouseEvent(this);
+			//pApplet_.registerKeyEvent(this);
+			
+			//pApplet_.registerMethod("mouseEvent", this);
+			//pApplet_.registerMethod("keyEvent", this);
+		}
+		*/
+		
 		// we are just a follower, just register with leader
 		if(!config_.isLeader())
 		{
@@ -268,6 +315,7 @@ public class Process extends Thread {
 				frameLock_.release();
 									
 				// send a FE message to all clients so they render the next scene
+				Process.start = System.currentTimeMillis();
 				broadcastFE();
 			}
 
@@ -330,13 +378,23 @@ public class Process extends Thread {
 	}
 	
 	/**
+	 * Disables the automatic serialization of mouse and keyboard events from the head process to the render processes.
+	 */
+	/*
+	public void disableDefaultSerialization()
+	{
+		enableDefaultSerialization_ = false;
+	}
+	*/
+	
+	/**
 	 * Allows the user to manually set the field of view of the camera.
 	 * @param fov The desired field of view in degrees.
 	 */
 	public void setFOV(float fov)
 	{
 		fov_ = fov;
-		cameraZ_ = (config_.getMasterDim()[1]/2.0f) / PApplet.tan(PConstants.PI * fov_/360.0f);
+		cameraZ_ = (config_.getMasterDim()[1]/2.0f) / PApplet.tan(PConstants.PI * fov_/180.0f);
 	}
 	
 	/*
@@ -386,7 +444,21 @@ public class Process extends Thread {
         float near   = cameraZ_*mod;
         float far    = 10000;
         pApplet_.frustum(left,right,bottom,top,near,far);
-        
+		
+		/*
+		double near = 0.1;
+		double far  = 10000.;
+		
+		double aspect = getMHeight() / getMWidth() * getLHeight() / getLWidth();
+		double winFovY = fov_ * aspect;
+		
+		double top = PApplet.tan(0.5 * winFovY * PConstants.PI/180.) * near;
+		double bottom = -top;
+		double left = 1./aspect * bottom;
+		double right = 1./aspect * top;
+		
+		double fleft = left + ()
+		*/
 	}
 	
 	// simply offsets the screen in space
@@ -403,14 +475,27 @@ public class Process extends Thread {
 		{
 			if(debug_) print("Received FE");
 			
-			// release the framelock
-			frameLock_.release();
-			
+			// receives the attribute if not null
 			if(c.att != null)
 			{
 				receivedAttributes_ = true;
 				attribute_ = c.att;
 			}
+			/*
+			// gets mouse and keyboard events from head process
+			if(c.k != null)
+			{
+				pApplet_.keyEvent = c.k;
+			}
+			if(c.m != null)
+			{
+				pApplet_.mouseEvent = c.m;
+			}
+			*/
+			// release the framelock
+			frameLock_.release();
+			
+			
 		}
 	}
 	
@@ -420,8 +505,14 @@ public class Process extends Thread {
 		Command command = new Command();
 		command.command = "fe";
 		
+		// set keyboard and mouse
+		//command.k = keyEvent_;
+		//command.m = mouseEvent_;
+		
 		if(sendAttributes_)
+		{
 			command.att = attribute_;
+		}
 		else command.att = null;
 		
 		// we have appended the attribute to the command, and can now set it back to false such that repeated
@@ -432,6 +523,10 @@ public class Process extends Thread {
 		{
 			clients_.elementAt(i).sendCommand(command);
 		}
+		
+		// set events to null so they are not resent
+		//keyEvent_ = null;
+		//mouseEvent_ = null;
 	}
 	
 	// sends msg to leader indicating the frame has been drawn

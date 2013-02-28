@@ -7,7 +7,6 @@ import xmlcomponents.Jocument;
 import xmlcomponents.Jode;
 
 import processing.core.PApplet;
-import processing.core.PConstants;
 
 /**
  * An object that encapsulates the configuration context of the display system.
@@ -58,9 +57,7 @@ public class Configuration {
 		
 		Jode root = null;
 		root = Jocument.load(_file);
-		
-		System.out.println(root.name());
-						
+								
 		// my DISPLAY identifier
 		display_ = System.getenv("DISPLAY");
 		

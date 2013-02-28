@@ -78,7 +78,13 @@ public class Connection extends Thread {
 		if(command.command.equals("ef"))
 		{
 			if(process_.getDebug()) process_.print("Received EF.");
-
+			
+			/*
+			long end = System.currentTimeMillis();
+			long elapsed = end - Process.start;
+			if(elapsed > 20)
+				process_.print("Remote end: " + socket_.getInetAddress() + " took " + elapsed + "ms to respond.");
+			*/
 			followerState_.ready();
 			
 			try {
