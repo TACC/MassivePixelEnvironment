@@ -1,11 +1,11 @@
-MostPixelsEver: Cluster Edition
+Massive Pixel Environment
 ==================
 
 ![Screenshot](http://farm9.staticflickr.com/8350/8270827002_9ca2286d89_z.jpg) 
 
 Get the latest version [here](https://sourceforge.net/projects/mostpixelseverc/files/latest/download)!
 
-MostPixelsEver: Cluster Edition (MPE) is a [Processing](http://processing.org/) library for easily extending sketches to distributed display environments. MPE was developed at the [Texas Advanced Computing Center](http://www.tacc.utexas.edu/tacc-projects/a-thousand-words) and aims to make it easy to prototype visualizations for otherwise difficult to use distributed systems. MPE is compatible with the lastest Processing versions and supports full compatibility with advanced featuresets of OpenGL.
+Massive Pixel Environment (MPE) is a [Processing](http://processing.org/) library for easily extending sketches to distributed display environments. MPE was developed at the [Texas Advanced Computing Center](http://www.tacc.utexas.edu/tacc-projects/a-thousand-words) and aims to make it easy to prototype visualizations for otherwise difficult to use distributed systems. MPE is compatible with the lastest Processing versions and supports full compatibility with advanced featuresets of OpenGL.
 
 In MPE:
 * Each node in a cluster runs an instance of the Processing sketch application
@@ -14,7 +14,7 @@ In MPE:
 
 ## Getting Started:
 
-* [MPE Simple Guide](https://github.com/TACC/MostPixelsEverCE/wiki/MostPixelsEver-HowTo)
+* [MPE Simple Guide](https://github.com/TACC/MassivePixelEnvironment/wiki/MassivePixelEnvironment-HowTo)
 
 ## Other Links
 * [MPE: CE Project Page](http://www.tacc.utexas.edu/tacc-software/most-pixels-ever-cluster-edition)
