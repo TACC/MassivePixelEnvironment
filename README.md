@@ -17,8 +17,9 @@ In MPE:
 * [MPE Simple Guide](https://github.com/TACC/MassivePixelEnvironment/wiki/MassivePixelEnvironment-HowTo)
 
 ## Other Links
-* [MPE: CE Project Page](http://www.tacc.utexas.edu/tacc-software/most-pixels-ever-cluster-edition)
-* [MPE: CE Paper/Abstract](https://dl.dropbox.com/u/6676512/VisualizationLaboratory/Posters/mpe-poster-visweek.pdf)
+* [MPE Project Page](http://www.tacc.utexas.edu/tacc-software/most-pixels-ever-cluster-edition)
+* [MPE Paper/Abstract @ IEEE Vis](https://dl.dropbox.com/u/6676512/VisualizationLaboratory/Posters/mpe-poster-visweek.pdf)
+* [MPE Paper @ CHI 2013](https://dl.dropboxusercontent.com/u/6676512/VisualizationLaboratory/Papers/powerwall-chi-2013/mpe-powerwall.pdf)
 
 ## Credits
 
