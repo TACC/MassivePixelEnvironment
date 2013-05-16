@@ -1,4 +1,4 @@
-<project name="ProcessingLibs" default="clean" basedir="../">
+<project name="MassivePixelEnvironment" default="clean" basedir="../">
 
     
 <!--	
@@ -17,9 +17,6 @@
 	<description>
         ${ant.description}
     </description>
-    	
-	
-	
     
 	<property name="line" value="------------------------------------------------------------------------------------------------" />
 	
