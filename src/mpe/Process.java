@@ -17,7 +17,7 @@ import processing.core.*;
 //import processing.event.MouseEvent;
 
 /**
- * This class is used as a communication thread to synchronize events between other processing processes.
+ * This class facilitates the execution of multiple Processing applications across a distributed environment.
  * @author Brandt Westing TACC
  *
  */
