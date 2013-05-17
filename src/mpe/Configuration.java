@@ -235,7 +235,7 @@ public class Configuration {
 		
 		// offsets
 		offsets_[0] = (mini)*tileRes_[0] + mini*bezels_[0];
-		offsets_[1] = (minj)*tileRes_[1] + mini*bezels_[1];
+		offsets_[1] = (minj)*tileRes_[1] + minj*bezels_[1];
 		
 		printSettings();
 	}
