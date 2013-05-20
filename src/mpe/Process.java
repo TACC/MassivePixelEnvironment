@@ -25,12 +25,14 @@ import processing.core.*;
 public class Process extends Thread {
 	
 	public final static String VERSION = "##version##";
+	
+	// used for timers
 	public static long start;
 	public static long end;
 	public static long elapsed;
 	
 	// contains identifier and screen-space info for this process
-	Configuration config_; 
+	Configuration config_;
 	
 	/*
 	 * A process may either be either a leader or follower.
@@ -59,6 +61,9 @@ public class Process extends Thread {
 	
 	// true if the camera should be placed during placeScreen. Set to false for peasyCam, etc.
 	boolean placeCamera_ = true;
+	
+	// true if auto-start is enabled (Default)
+	boolean autostart_ = true;
 	
 	// keeps track of the state of the followers
 	FollowerState followerState_;
@@ -137,7 +142,8 @@ public class Process extends Thread {
 		
 		barrier_ = new CyclicBarrier(config_.numFollowers_ + 1);
 		
-		config_.printSettings();
+		if (debug_)
+			config_.printSettings();
 		
 		running_ = true;
 	}
@@ -148,7 +154,6 @@ public class Process extends Thread {
 	public void pre()
 	{
 		if(debug_) print("Trying to acquire framelock!");
-
 		
 		// wait on framelock to be unlocked
 		frameLock_.acquire();
@@ -204,7 +209,7 @@ public class Process extends Thread {
 		}
 		*/
 		
-		// we are just a follower, just register with leader
+		// we are just a follower, register with leader
 		if(!config_.isLeader())
 		{
 			// set up socket to leader, retrying every two seconds if fail
@@ -241,8 +246,14 @@ public class Process extends Thread {
 		// we are the leader, create connection listener(s)
 		if(config_.isLeader())
 		{
-			
 			clients_ = new Vector<Connection>();
+			
+			// create thread to launch processes on remote nodes
+			if(autostart_)
+			{
+				AutoLauncher autoLauncher = new AutoLauncher(config_.getFilename());
+				autoLauncher.start();
+			}
 			
 			// set listener for all connections
 	        ServerSocket listener = null;
@@ -289,7 +300,7 @@ public class Process extends Thread {
 	}
 	
 	/**
-	 * Called automagically by start().
+	 * Called auto-magically by start().
 	 */
 	public void run()
 	{
@@ -375,6 +386,14 @@ public class Process extends Thread {
 	public void disableCameraReset()
 	{
 		placeCamera_ = false;
+	}
+	
+	/**
+	 * Disables autostart of MPE children across cluster. To use MPE you must use mperun script.
+	 */
+	public void disableAutoStart()
+	{
+		autostart_ = false;
 	}
 	
 	/**

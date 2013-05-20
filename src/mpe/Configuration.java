@@ -17,6 +17,8 @@ public class Configuration {
 
 	private PApplet applet_;
 	
+	private String file_;
+	
 	private String server_ = null;;
 	private int port_;
 	private int[] localDim_;
@@ -35,16 +37,20 @@ public class Configuration {
 	// the number of follower processes (total num processes - 1)
 	int numFollowers_;
 	
-	// this constructer is in case you forget the file location or just omit it
+	// this constructor is in case you forget the file location or just omit it
 	public Configuration(PApplet p)
 	{
 		this("configuration.xml", p);
 	}
 
+	// We assume that a head process is launched from the processing GUI, and the rank is not declared
+	// if the rank is declared in the environment, we assume the process was launched via command line
 	public Configuration(String _file, PApplet _p)
 	{
 		// the processing applet that we are taking care of!
 		applet_ = _p;
+		
+		file_ = _file;
 		
 		tileRes_   = new int[2];
 		numTiles_  = new int[2];
@@ -63,15 +69,7 @@ public class Configuration {
 		
 		if(System.getenv("RANK") != null)
 			rank_ = Integer.valueOf(System.getenv("RANK"));
-		else rank_ = -1;
-		
-		// get my hostname to identify me in the config file
-		String hostname = "";
-		try {
-			hostname = java.net.InetAddress.getLocalHost().getHostName();
-		} catch (UnknownHostException e) {
-			System.out.println("I can't determine my hostname!");
-		}
+		else rank_ = -1; // head node in autostart
 		
 		Jode config = root.single("configuration");
 		Jode dimensions = config.single("dimensions");
@@ -91,106 +89,41 @@ public class Configuration {
 		{
 			server_ = head.attribute("host").v;
 			port_ = Integer.parseInt(head.attribute("port").v);
-			System.out.println("Server: "+ server_ + ":" + Integer.toString(port_));
+			if(debug_)
+				System.out.println("Server: "+ server_ + ":" + Integer.toString(port_));
 		}
 		else
 		{
-			System.out.println("Couldn't get head! Setting default.");
+			System.out.println("Couldn't get head! Setting default as localhost");
 			server_ = "localhost";
+		}
+		
+		// we are the head node
+		if(rank_ == -1)
+		{
+			Jode headChild = head.first(); 
+			localDim_[0] = Integer.parseInt(headChild.attribute("width").v);
+			localDim_[1] = Integer.parseInt(headChild.attribute("height").v);
+			
+			masterDim_[0] = localDim_[0];
+			masterDim_[1] = localDim_[1];
+			
+			// offsets
+			offsets_[0] = 0;
+			offsets_[1] = 0;
+			isLeader_ = true;
+			return;
 		}
 		
 		Jode child = null;
 		
-		// our rank is defined in the environment, so we should search for that
-		if(rank_ != -1)
+		// find the entry for the correct host
+		for(int i = 1; i < config.children().getLength(); i++)
 		{
+			child = config.children().get(i);
 			
-			// Find out if this process is the head process
-			for(int i = 0; i < config.children().getLength(); i++)
-			{
-				child = config.children().get(i);
-				String nodeName = child.n;
-				
-				// found the head child
-				if(nodeName.equals("head"))
-				{
-					// we are the head node
-					if(Integer.parseInt(child.attribute("rank").v) == rank_)
-					{
-						Jode headChild = child.first(); 
-						localDim_[0] = Integer.parseInt(headChild.attribute("width").v);
-						localDim_[1] = Integer.parseInt(headChild.attribute("height").v);
-						
-						masterDim_[0] = localDim_[0];
-						masterDim_[1] = localDim_[1];
-						
-						// offsets
-						offsets_[0] = 0;
-						offsets_[1] = 0;
-						isLeader_ = true;
-						return;
-					}
-				}
-			}
-			
-			// find the entry for the correct host
-			for(int i = 1; i < config.children().getLength(); i++)
-			{
-				child = config.children().get(i);
-				
-				if(Integer.parseInt(child.attribute("rank").v) == rank_)
-					break; // we found our xml entry!
-			}
-		}
-		
-		// RANK env. variable was not set, resort to hostname lookup
-		else
-		{
-			System.out.println("RANK was not found in the environment, using hostname lookup. Try exporting RANK for each process in the future!");
-			// Find out if this process is the head process
-			for(int i = 0; i < config.children().getLength(); i++)
-			{
-				child = config.children().get(i);
-				String nodeName = child.n;
-				
-				// found the head child
-				if(nodeName.equals("head"))
-				{
-					// we are the head node
-					if(child.attribute("host").v.equals(hostname))
-					{
-						Jode headChild = child.first(); 
-						localDim_[0] = Integer.parseInt(headChild.attribute("width").v);
-						localDim_[1] = Integer.parseInt(headChild.attribute("width").v);
-						
-						masterDim_[0] = localDim_[0];
-						masterDim_[1] = localDim_[1];
-						
-						// offsets
-						offsets_[0] = 0;
-						offsets_[1] = 0;
-						isLeader_ = true;
-
-						return;
-					}
-				}
-			}
-			
-			// find the entry for the correct host
-			for(int i = 1; i < config.children().getLength(); i++)
-			{
-				child = config.children().get(i);
-				String host = child.attribute("host").v;
-				String display = child.attribute("display").v;
-				
-				if(host != null)
-				{
-					if(host.equals(hostname) && display.equals(display_))
-					{
-						break;
-					}
-				}
-			}
+			if(Integer.parseInt(child.attribute("rank").v) == rank_)
+				break; // we found our xml entry!
 		}
 		
 		if(child == null)
@@ -237,7 +170,8 @@ public class Configuration {
 		offsets_[0] = (mini)*tileRes_[0] + mini*bezels_[0];
 		offsets_[1] = (minj)*tileRes_[1] + minj*bezels_[1];
 		
-		printSettings();
+		if(debug_)
+			printSettings();
 	}
 	
 	public PApplet getApplet()
@@ -295,6 +229,12 @@ public class Configuration {
 	public int getRank()
 	{
 		return rank_;
+	}
+	
+	public String getFilename()
+	
+	{
+		return file_;
 	}
 	
 	public void printSettings()
