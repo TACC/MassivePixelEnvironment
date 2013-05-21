@@ -251,7 +251,7 @@ public class Process extends Thread {
 			// create thread to launch processes on remote nodes
 			if(autostart_)
 			{
-				AutoLauncher autoLauncher = new AutoLauncher(config_.getFilename());
+				AutoLauncher autoLauncher = new AutoLauncher(config_.getFilename(), pApplet_.sketchPath);
 				autoLauncher.start();
 			}
 			

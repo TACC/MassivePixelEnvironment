@@ -69,7 +69,7 @@ public class Configuration {
 		
 		if(System.getenv("RANK") != null)
 			rank_ = Integer.valueOf(System.getenv("RANK"));
-		else rank_ = -1; // head node in autostart
+		else rank_ = -1; // head node in auto-start
 		
 		Jode config = root.single("configuration");
 		Jode dimensions = config.single("dimensions");
@@ -79,9 +79,9 @@ public class Configuration {
 		numTiles_[1]  = Integer.parseInt(dimensions.attribute("numTilesHeight").v);
 		bezels_[0]    = Integer.parseInt(dimensions.attribute("mullionWidth").v);
 		bezels_[1]    = Integer.parseInt(dimensions.attribute("mullionHeight").v);
-		debug_ = Integer.parseInt(dimensions.attribute("debug").v) == 1;
+		debug_ = Integer.parseInt(config.single("config").attribute("debug").v) == 1;
 		
-		numFollowers_ = config.children().getLength() - 2;
+		numFollowers_ = config.children().getLength() - 3;
 		
 		Jode head = config.first("head");
 		
@@ -101,7 +101,7 @@ public class Configuration {
 		// we are the head node
 		if(rank_ == -1)
 		{
-			Jode headChild = head.first(); 
+			Jode headChild = head.first();
 			localDim_[0] = Integer.parseInt(headChild.attribute("width").v);
 			localDim_[1] = Integer.parseInt(headChild.attribute("height").v);
 			
@@ -118,12 +118,16 @@ public class Configuration {
 		Jode child = null;
 		
 		// find the entry for the correct host
-		for(int i = 1; i < config.children().getLength(); i++)
+		for(Jode configChild: config.children())
 		{
-			child = config.children().get(i);
-			
-			if(Integer.parseInt(child.attribute("rank").v) == rank_)
-				break; // we found our xml entry!
+			if(configChild.hasAttribute("rank"))
+			{
+				if(Integer.parseInt(configChild.attribute("rank").v) == rank_)
+				{
+					child = configChild;
+					break; // we found our xml entry!
+				}
+			}
 		}
 		
 		if(child == null)
@@ -132,7 +136,7 @@ public class Configuration {
 			System.exit(-1);
 		}
 		
-		// child corresponds to entry with the correct hostname here
+		// child corresponds to entry with the correct hostName here
 		Jode childi;
 		childi = child.first();
 		int mini = Integer.parseInt(childi.attribute("i").v);
