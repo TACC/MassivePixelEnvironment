@@ -1,6 +1,5 @@
 package mpe;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,7 +39,7 @@ public class AutoLauncher extends Thread {
 			if (child.n.equals("process"))
 			{
 				String rank = child.attribute("rank").v;
-				String hostName = child.attribute("host").v;
+				final String hostName = child.attribute("host").v;
 
 				String[] command = {"processing-java", 
 									 "--sketch="+sketchPath_, 
@@ -58,28 +57,31 @@ public class AutoLauncher extends Thread {
 				
 				try {
 					java.lang.Process p = pb.start();
+					final InputStream is = p.getInputStream();
 					
-					/*
-					InputStream errorOutput = new BufferedInputStream(p.getErrorStream(), 10000);
-					InputStream consoleOutput = new BufferedInputStream(p.getInputStream(), 10000);
-
-					//int exitCode = p.waitFor();
-					Thread.sleep(1000);
-
-					int ch;
-
-					System.out.println("Errors:");
-					while ((ch = errorOutput.read()) != -1) {
-					    System.out.print((char) ch);
-					}
-
-					System.out.println("Output:");
-					while ((ch = consoleOutput.read()) != -1) {
-					    System.out.print((char) ch);
-					}
+					new Thread(new Runnable() {
+					    public void run() {
+					        try {
+					            BufferedReader reader =
+					                new BufferedReader(new InputStreamReader(is));
+					            String line;
+					            while ((line = reader.readLine()) != null) {
+					                System.out.println(hostName + ": " + line);
+					            }
+					        } catch (IOException e) {
+					            e.printStackTrace();
+					        } finally {
+					            try {
+									is.close();
+								} catch (IOException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+					        }
+					    }
+					}).start();
 
 					//System.out.println("Exit code: " + exitCode);
-					*/
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
