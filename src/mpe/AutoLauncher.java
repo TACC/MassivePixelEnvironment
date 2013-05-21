@@ -48,7 +48,7 @@ public class AutoLauncher extends Thread {
 									 "--output="+sketchPath_+"//"+hostName, 
 									 "--force"};
 				
-				// the ProcessBuilder will launch the process external to the VM with specified env params
+				// the ProcessBuilder will launch the process external to the VM with specified env. parameters
 				ProcessBuilder pb = new ProcessBuilder(command);
 				Map<String, String> env = pb.environment();
 				env.put("RANK", rank);
