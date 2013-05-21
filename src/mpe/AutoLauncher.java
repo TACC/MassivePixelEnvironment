@@ -41,22 +41,21 @@ public class AutoLauncher extends Thread {
 			{
 				String rank = child.attribute("rank").v;
 				String hostName = child.attribute("host").v;
+
+				String[] command = {"processing-java", 
+									 "--sketch="+sketchPath_, 
+									 "--run", 
+									 "--output="+sketchPath_+"//"+hostName, 
+									 "--force"};
 				
-				String[] envp = {"RANK=" + rank, "PATH=$PATH:" + processingPath};
-				
-				System.out.println(sketchPath_);
-				
-				String command = "processing-java.exe --sketch=" + sketchPath_ + " --run --output=" + sketchPath_ + hostName;
-				String command2 = "echo";
-				String[] command3 = {"C://Program Files//processing-2.0b8//processing-java.exe", 
-										"--sketch="+sketchPath_, "--run", "--output="+sketchPath_+"//"+hostName, "--force"};
-				
-				ProcessBuilder pb = new ProcessBuilder(command3);
+				// the ProcessBuilder will launch the process external to the VM with specified env params
+				ProcessBuilder pb = new ProcessBuilder(command);
 				Map<String, String> env = pb.environment();
 				env.put("RANK", rank);
 				env.put("PATH", "PATH=" + processingPath);
+				
 				pb.redirectErrorStream(true);
-				//pb.inheritIO();
+				
 				try {
 					java.lang.Process p = pb.start();
 					
