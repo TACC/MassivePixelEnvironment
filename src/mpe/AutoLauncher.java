@@ -41,10 +41,16 @@ public class AutoLauncher extends Thread {
 				String rank = child.attribute("rank").v;
 				final String hostName = child.attribute("host").v;
 
-				String[] command = {"processing-java", 
+				// TODO: only use ssh if hostname != localhost && on bash environments (not windows)
+				String[] command = {"ssh", 
+									hostName, 
+									"export RANK="+rank, 
+									"export PATH=$PATH:"+processingPath,
+									";", // seperate the exports with the executable
+									"processing-java", 
 									 "--sketch="+sketchPath_, 
 									 "--run", 
-									 "--output="+sketchPath_+"//"+hostName, 
+									 "--output="+sketchPath_+"/"+hostName, 
 									 "--force"};
 				
 				// the ProcessBuilder will launch the process external to the VM with specified env. parameters
