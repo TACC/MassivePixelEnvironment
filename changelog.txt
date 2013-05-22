@@ -2,6 +2,7 @@ V0.2 - May 16th, 2013
 
 * Updated build files to reflect MPE name change.
 * Fixed bug for bezel compensation correctness.
+* Renamed project to Massive Pixel Environment from MostPixelsEverCE
 
 V0.1.1 - October 9th, 2012
       * version 0.1.1
