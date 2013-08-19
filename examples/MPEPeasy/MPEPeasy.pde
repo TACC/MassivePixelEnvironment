@@ -16,7 +16,7 @@ Configuration tileConfig;
 void setup() {
   
   // create a new configuration object and specify the path to the configuration file
-  tileConfig = new Configuration("/home/brandt/Desktop/configuration.xml", this);
+  tileConfig = new Configuration("data/configuration.xml", this);
   
   // set the size of the sketch based on the configuration file
   size(tileConfig.getLWidth(), tileConfig.getLHeight(), OPENGL);
