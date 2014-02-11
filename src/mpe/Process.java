@@ -227,9 +227,11 @@ public class Process extends Thread {
 		            ois_ = new ObjectInputStream(processSocket_.getInputStream());
 				} catch (UnknownHostException e) {
 					System.out.println("Can't connect to leader process! Did you specify a 'head' process in config? Retrying!");
+					e.printStackTrace();
 					notConnected = true;
 				} catch (IOException e) {
 					System.out.println("Can't connect to leader process! Did you specify a 'head' process in config? Retrying!");
+					e.printStackTrace();
 					notConnected = true;
 				}
 				
@@ -323,7 +325,9 @@ public class Process extends Thread {
 				barrier_.reset();
 				
 				// release the framelock so master can render
+				if(debug_) print("Releasing framelock!");
 				frameLock_.release();
+				
 									
 				// send a FE message to all clients so they render the next scene
 				Process.start = System.currentTimeMillis();
@@ -511,6 +515,8 @@ public class Process extends Thread {
 				pApplet_.mouseEvent = c.m;
 			}
 			*/
+			if(debug_) print("Releasing framelock!");
+			
 			// release the framelock
 			frameLock_.release();
 			

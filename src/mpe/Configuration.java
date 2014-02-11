@@ -29,7 +29,7 @@ public class Configuration {
 	private int[] bezels_;
 	private String display_;
 	private int rank_;
-	private boolean debug_ = false;
+	private boolean debug_ = true;
 	
 	// are we the leader process?
 	boolean isLeader_ = false;
@@ -71,18 +71,23 @@ public class Configuration {
 			rank_ = Integer.valueOf(System.getenv("RANK"));
 		else rank_ = -1; // head node in auto-start
 		
+		System.out.println("loading XML configuration node");
 		Jode config = root.single("configuration");
+		System.out.println("loading XML dimensions node");
 		Jode dimensions = config.single("dimensions");
+		System.out.println("loading XML dimensions node, screenWidth");
 		tileRes_[0]   = Integer.parseInt(dimensions.attribute("screenWidth").v);
 		tileRes_[1]   = Integer.parseInt(dimensions.attribute("screenHeight").v);
 		numTiles_[0]  = Integer.parseInt(dimensions.attribute("numTilesWidth").v);
 		numTiles_[1]  = Integer.parseInt(dimensions.attribute("numTilesHeight").v);
 		bezels_[0]    = Integer.parseInt(dimensions.attribute("mullionWidth").v);
+		System.out.println("loading XML dimensions node, mullionHeight");
 		bezels_[1]    = Integer.parseInt(dimensions.attribute("mullionHeight").v);
-		debug_ = Integer.parseInt(config.single("config").attribute("debug").v) == 1;
+		System.out.println("loading XML dimensions node, debug");
+		debug_ = Integer.parseInt(dimensions.attribute("debug").v) == 1;
 		
 		numFollowers_ = config.children().getLength() - 3;
-		
+		System.out.println("loading XML dimensions node, head");
 		Jode head = config.first("head");
 		
 		if(head != null)

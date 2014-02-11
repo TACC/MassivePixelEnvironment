@@ -33,9 +33,11 @@ public class AutoLauncher extends Thread {
 		Jode root = null;
 		root = Jocument.load(configFile_);
 		
+		System.out.println("AutoLauncher:loading XML configuration node");
 		Jode config = root.single("configuration");
+		System.out.println("AutoLauncher:loading XML processingPath node");
 		String processingPath = config.first("config").attribute("processingPath").v;
-		
+		System.out.println("processingPath = "+processingPath);
 		// launch each child process
 		for(Jode child : config.children())
 		{
@@ -55,11 +57,11 @@ public class AutoLauncher extends Thread {
 					String rank = child.attribute("rank").v;
 					final String hostName = child.attribute("host").v;
 					
-					String display=":0";
+					String display=":0.0";
 					if(child.hasAttribute("display"))
 						display = child.attribute("display").v;
 					
-					String[] command = {"ssh", 
+					String[] command = {"ssh",
 										hostName, 
 										"export RANK="+rank, 
 										"export PATH=$PATH:"+processingPath,
