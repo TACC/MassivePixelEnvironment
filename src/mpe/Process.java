@@ -460,14 +460,18 @@ public class Process extends Thread {
 		  float far = 1000;
 		*/ 
 		float mod = 0.1f;
-        float left   = (config_.getOffsets()[0] - config_.getMasterDim()[0]/2)*mod;
-        float right  = ((config_.getOffsets()[0] + config_.getLocalDim()[0]) - config_.getMasterDim()[0]/2)*mod;
-        float bottom = (config_.getOffsets()[1] - config_.getMasterDim()[1]/2)*mod;
-        float top = ((config_.getOffsets()[1] + config_.getLocalDim()[1]) - config_.getMasterDim()[1]/2)*mod;
+        float left   = (config_.getOffsets()[0] - config_.getMasterDim()[0]/2.0f)*mod;
+        float right  = ((config_.getOffsets()[0] + config_.getLocalDim()[0]) - config_.getMasterDim()[0]/2.0f)*mod;
+        float bottom = (config_.getOffsets()[1] - config_.getMasterDim()[1]/2.0f)*mod;
+        float top = ((config_.getOffsets()[1] + config_.getLocalDim()[1]) - config_.getMasterDim()[1]/2.0f)*mod;
         float near   = cameraZ_*mod;
         float far    = 10000;
         pApplet_.frustum(left,right,bottom,top,near,far);
-		
+        
+        if(debug_) print("left: "+left+" right: "+right+" bottom: "+bottom+" top: "+top);
+        if(debug_) print("master width: "+getMWidth()+" master height: "+getMHeight()+" local width: "+getLWidth()+" local height: "+getLHeight());
+		if(debug_) print("offset 0: "+config_.getOffsets()[0]+", offset 1: "+config_.getOffsets()[1]);
+        
 		/*
 		double near = 0.1;
 		double far  = 10000.;

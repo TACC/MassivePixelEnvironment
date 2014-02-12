@@ -87,6 +87,7 @@ public class Configuration {
 		debug_ = Integer.parseInt(dimensions.attribute("debug").v) == 1;
 		
 		numFollowers_ = config.children().getLength() - 3;
+		System.out.println("numFollowers_ = " + numFollowers_);
 		System.out.println("loading XML dimensions node, head");
 		Jode head = config.first("head");
 		
