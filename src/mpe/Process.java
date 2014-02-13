@@ -134,8 +134,14 @@ public class Process extends Thread {
 		cameraZ_ = (config_.getMasterDim()[1]/2.0f) / PApplet.tan(PConstants.PI * fov_/180.0f);
 		
 		// after the sketch calls draw, it will call the draw method in this class
-		pApplet_.registerDraw(this);
-		pApplet_.registerPre(this);
+		pApplet_.registerMethod("draw", this);
+		pApplet_.registerMethod("pre", this);
+		
+		// when the sketch is stopped, it will call the dispose method in this class
+		pApplet_.registerMethod("dispose", this);
+		
+		
+		pApplet_.registerMethod("stop", this);
 		
 		// by default, automatically serialize mouse and keyboard events
 		
@@ -171,6 +177,38 @@ public class Process extends Thread {
 		// send end-of-frame message if not leader
 		if(!config_.isLeader())
 			endFrame();
+	}
+	
+	/**
+	 * Called to free resources before shutting down. This should only be called by PApplet. 
+	 * The dispose() method is what gets called when the host applet is being shut down, 
+	 * so this should stop any threads, disconnect from the net, unload memory, etc.
+	 */
+	public void dispose()
+	{
+		if(debug_) print("Shutting down MPE");
+		
+		for(int i = 0; i < clients_.size(); i++) 
+		{
+			if(debug_) print("Shut down each client process");
+			
+			// shut down client processes here
+			
+		}
+	}
+	
+	/**
+	 * Called to halt execution. Can be called by users, for instance movie.stop() will shut down 
+	 * a movie that's being played, or camera.stop() stops capturing video. server.stop() will shut 
+	 * down the server and shut it down completely. 
+	 * May be called multiple times.
+	 */
+	public void stop()
+	{
+		for(int i = 0; i < clients_.size(); i++) 
+		{
+			if(debug_) print("Execution stopped!");
+		}
 	}
 	
 	/**
@@ -623,4 +661,5 @@ public class Process extends Thread {
 			return null;
 		}		
 	}
+
 }
