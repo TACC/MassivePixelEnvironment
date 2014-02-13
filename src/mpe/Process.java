@@ -140,9 +140,6 @@ public class Process extends Thread {
 		// when the sketch is stopped, it will call the dispose method in this class
 		pApplet_.registerMethod("dispose", this);
 		
-		
-		pApplet_.registerMethod("stop", this);
-		
 		// by default, automatically serialize mouse and keyboard events
 		
 		
@@ -194,20 +191,6 @@ public class Process extends Thread {
 			
 			// shut down client processes here
 			
-		}
-	}
-	
-	/**
-	 * Called to halt execution. Can be called by users, for instance movie.stop() will shut down 
-	 * a movie that's being played, or camera.stop() stops capturing video. server.stop() will shut 
-	 * down the server and shut it down completely. 
-	 * May be called multiple times.
-	 */
-	public void stop()
-	{
-		for(int i = 0; i < clients_.size(); i++) 
-		{
-			if(debug_) print("Execution stopped!");
 		}
 	}
 	
