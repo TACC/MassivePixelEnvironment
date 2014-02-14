@@ -1,0 +1,52 @@
+<configuration>
+    <dimensions numTilesWidth="4" numTilesHeight="5" screenWidth="2560" screenHeight="1600" mullionWidth="0" mullionHeight="0" debug="1"/>
+    
+    <config processingPath="/home/turknett/lib/processing-2.1.1/"/>
+
+    <head host="horseshoe3" port="9002" display=":0" rank="0">
+        <screen width="1024" height="768"/>
+    </head>
+
+    <process host="s01" display=":0.0" rank = "1">
+        <screen x="0" y="0" i="0" j="4"/>
+        <screen x="2560" y="0" i="1" j="4"/>
+    </process>
+    <process host="s01" display=":0.1" rank = "2">
+        <screen x="0" y="0" i="2" j="4"/>
+        <screen x="2560" y="0" i="3" j="4"/>
+    </process>
+    <process host="s02" display=":0.0" rank = "3">
+        <screen x="0" y="0" i="0" j="3"/>
+        <screen x="2560" y="0" i="1" j="3"/>
+    </process>
+    <process host="s02" display=":0.1" rank = "4">
+        <screen x="0" y="0" i="2" j="3"/>
+        <screen x="2560" y="0" i="3" j="3"/>
+    </process>
+    <process host="s03" display=":0.0" rank = "5">
+        <screen x="0" y="0" i="0" j="2"/>
+        <screen x="2560" y="0" i="1" j="2"/>
+    </process>
+    <process host="s03" display=":0.1" rank = "6">
+        <screen x="0" y="0" i="2" j="2"/>
+        <screen x="2560" y="0" i="3" j="2"/>
+    </process>
+    <process host="s04" display=":0.0" rank = "7">
+        <screen x="0" y="0" i="0" j="1"/>
+        <screen x="2560" y="0" i="1" j="1"/>
+    </process>
+    <process host="s04" display=":0.1" rank = "8">
+        <screen x="0" y="0" i="2" j="1"/>
+        <screen x="2560" y="0" i="3" j="1"/>
+    </process>
+
+    <process host="s05" display=":0.0" rank = "9">
+        <screen x="0" y="0" i="0" j="0"/>
+        <screen x="2560" y="0" i="1" j="0"/>
+    </process>
+    <process host="s05" display=":0.1" rank = "10">
+        <screen x="0" y="0" i="2" j="4"/>
+        <screen x="2560" y="0" i="3" j="4"/>
+    </process>
+    
+</configuration>
