@@ -16,7 +16,7 @@ Configuration tileConfig;
 void setup() {
   
   // create a new configuration object and specify the path to the configuration file
-  tileConfig = new Configuration(dataPath("configuration.xml"), this);
+  tileConfig = new Configuration(dataPath("configuration_stallion.xml"), this);
   
   // set the size of the sketch based on the configuration file
   size(tileConfig.getLWidth(), tileConfig.getLHeight(), OPENGL);

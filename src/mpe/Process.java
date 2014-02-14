@@ -102,6 +102,8 @@ public class Process extends Thread {
 	ObjectInputStream ois_;
 	ObjectOutputStream oos_;
 	
+	AutoLauncher autoLauncher_;
+	
 	// by default, do not serialize mouse and keyboard events (they are not serializable yet) //todo
 	//boolean enableDefaultSerialization_ = false;
 	
@@ -185,13 +187,22 @@ public class Process extends Thread {
 	{
 		if(debug_) print("Shutting down MPE");
 		
+		//autoLauncher_.shutDown();
+		
+		System.exit(0);
+		
 		for(int i = 0; i < clients_.size(); i++) 
 		{
-			if(debug_) print("Shut down each client process");
+			if(debug_) print("Shuting down client process "+i);
 			
 			// shut down client processes here
+			//Connection c = clients_.elementAt(i);
+			//c = null;
+			
+			clients_.elementAt(i).interrupt();
 			
 		}
+		return;
 	}
 	
 	/**
@@ -274,8 +285,11 @@ public class Process extends Thread {
 			// create thread to launch processes on remote nodes
 			if(autostart_)
 			{
-				AutoLauncher autoLauncher = new AutoLauncher(config_.getFilename(), pApplet_.sketchPath);
-				autoLauncher.start();
+				autoLauncher_ = new AutoLauncher(config_.getFilename(), pApplet_.sketchPath);
+				autoLauncher_.start();
+				
+				//AutoLauncher autoLauncher = new AutoLauncher(config_.getFilename(), pApplet_.sketchPath);
+				//autoLauncher.start();
 			}
 			
 			// set listener for all connections

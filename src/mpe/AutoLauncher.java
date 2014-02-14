@@ -120,4 +120,12 @@ public class AutoLauncher extends Thread {
 			}
 		}
 	}
+	
+	public void shutDown()
+	{
+		// kill all previously launched process'
+		for(java.lang.Process p : processVector_)
+			p.destroy();
+		System.exit(0);
+	}
 }
