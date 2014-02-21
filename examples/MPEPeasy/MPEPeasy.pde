@@ -21,6 +21,9 @@ void setup() {
   // set the size of the sketch based on the configuration file
   size(tileConfig.getLWidth(), tileConfig.getLHeight(), OPENGL);
   
+  //set the window location of the processing sketch
+  frame.setLocation(0,0);
+  
   // create a new process
   process = new Process(tileConfig);
   
