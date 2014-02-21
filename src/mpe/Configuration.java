@@ -167,6 +167,9 @@ public class Configuration {
 		int rangei = maxi - mini + 1;
 		int rangej = maxj - minj + 1;
 		
+		if (debug_)
+			System.out.println("maxi: "+maxi+" mini: "+mini+" rangei: "+rangei);
+		
 		int totalMullionsX = (rangei - 1)*bezels_[0];
 		int totalMullionsY = (rangej - 1)*bezels_[1];
 		
@@ -175,6 +178,12 @@ public class Configuration {
 		
 		masterDim_[0] = numTiles_[0]*tileRes_[0] + (numTiles_[0] - 1)*bezels_[0];
 		masterDim_[1] = numTiles_[1]*tileRes_[1] + (numTiles_[1] - 1)*bezels_[1];
+		
+		if (debug_)
+		{
+			System.out.println("masterDim_[0]: "+masterDim_[0]+"masterDim_[1]: "+masterDim_[1]);
+			System.out.println("localDim_[0]: "+localDim_[0]+"localDim_[1]: "+localDim_[1]);
+		}
 		
 		// offsets
 		offsets_[0] = (mini)*tileRes_[0] + mini*bezels_[0];

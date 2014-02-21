@@ -526,6 +526,8 @@ public class Process extends Thread {
 	// simply offsets the screen in space
 	private void placeScreen2D()
 	{
+		if (debug_)
+			System.out.println("Placing screen at: " + config_.getOffsets()[0]*-1 + ", " + config_.getOffsets()[1]*-1);
 		pApplet_.translate(config_.getOffsets()[0] * -1, config_.getOffsets()[1] * -1);
 	}
 	
