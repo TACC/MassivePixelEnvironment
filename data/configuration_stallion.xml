@@ -1,7 +1,7 @@
 <configuration>
     <dimensions numTilesWidth="16" numTilesHeight="5" screenWidth="2560" screenHeight="1600" mullionWidth="0" mullionHeight="0" fullscreen="0" debug="0"/>
 
-	<config processingPath = "/share/apps/processing/2.1.1/processing" debug ="0"/>    
+	<config processingPath = "/share/apps/processing/2.1.1" debug ="0"/>    
 
     <head host="stallion" port="9002" display=":0.0" rank ="0">
         <size width="1024" height="768"/>
