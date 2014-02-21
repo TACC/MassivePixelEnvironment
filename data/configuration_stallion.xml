@@ -7,55 +7,55 @@
         <size width="1024" height="768"/>
     </head>
 
-    <process host="s1" display=":0.0" rank ="1">
+    <process host="s01" display=":0.0" rank ="1">
         <screen  i="0" j="4"/>
         <screen  i="1" j="4"/>
         <screen  i="2" j="4"/>
         <screen  i="3" j="4"/>
     </process>
-    <process host="s2" display=":0.0" rank ="2">
+    <process host="s02" display=":0.0" rank ="2">
         <screen  i="0" j="3"/>
         <screen  i="1" j="3"/>
         <screen  i="2" j="3"/>
         <screen  i="3" j="3"/>
     </process>
-    <process host="s3" display=":0.0" rank ="3">
+    <process host="s03" display=":0.0" rank ="3">
         <screen  i="0" j="2"/>
         <screen  i="1" j="2"/>
         <screen  i="2" j="2"/>
         <screen  i="3" j="2"/>
     </process>
-    <process host="s4" display=":0.0" rank ="4">
+    <process host="s04" display=":0.0" rank ="4">
         <screen  i="0" j="1"/>
         <screen  i="1" j="1"/>
         <screen  i="2" j="1"/>
         <screen  i="3" j="1"/>
     </process>
-    <process host="s5" display=":0.0" rank ="5">
+    <process host="s05" display=":0.0" rank ="5">
         <screen  i="0" j="0"/>
         <screen  i="1" j="0"/>
         <screen  i="2" j="0"/>
         <screen  i="3" j="0"/>
     </process>
-    <process host="s6" display=":0.0" rank ="6">
+    <process host="s06" display=":0.0" rank ="6">
         <screen  i="4" j="4"/>
         <screen  i="5" j="4"/>
         <screen  i="6" j="4"/>
         <screen  i="7" j="4"/>
     </process>
-    <process host="s7" display=":0.0" rank ="7">
+    <process host="s07" display=":0.0" rank ="7">
         <screen  i="4" j="3"/>
         <screen  i="5" j="3"/>
         <screen  i="6" j="3"/>
         <screen  i="7" j="3"/>
     </process>
-    <process host="s8" display=":0.0" rank ="8">
+    <process host="s08" display=":0.0" rank ="8">
         <screen  i="4" j="2"/>
         <screen  i="5" j="2"/>
         <screen  i="6" j="2"/>
         <screen  i="7" j="2"/>
     </process>
-    <process host="s9" display=":0.0" rank ="9">
+    <process host="s09" display=":0.0" rank ="9">
         <screen  i="4" j="1"/>
         <screen  i="5" j="1"/>
         <screen  i="6" j="1"/>
