@@ -1,20 +1,135 @@
 <configuration>
-    <dimensions numTilesWidth="2" numTilesHeight="2" screenWidth="2560" screenHeight="1600" mullionWidth="0" mullionHeight="0" debug="1"/>
-    
-    <config processingPath="/home/turknett/lib/processing-2.1.1/"/>
+    <dimensions numTilesWidth="16" numTilesHeight="5" screenWidth="2560" screenHeight="1600" mullionWidth="0" mullionHeight="0" fullscreen="0" debug="0"/>
 
-    <head host="horseshoe3" port="9002" display=":0" rank="0">
-        <screen width="1024" height="768"/>
+	<config processingPath = "/share/apps/processing/2.1.1/processing" debug ="0"/>    
+
+    <head host="stallion" port="9002" display=":0.0" rank ="0">
+        <size width="1024" height="768"/>
     </head>
 
-    <process host="s04" display=":0.0" rank="1">
-        <screen x="0" y="0" i="0" j="0"/>
-        <screen x="2560" y="0" i="1" j="0"/>
+    <process host="s1" display=":0.0" rank ="1">
+        <screen  i="0" j="4"/>
+        <screen  i="1" j="4"/>
+        <screen  i="2" j="4"/>
+        <screen  i="3" j="4"/>
     </process>
-    <process host="s05" display=":0.0" rank="2">
-        <screen x="0" y="0" i="0" j="1"/>
-        <screen x="2560" y="0" i="1" j="1"/>
+    <process host="s2" display=":0.0" rank ="2">
+        <screen  i="0" j="3"/>
+        <screen  i="1" j="3"/>
+        <screen  i="2" j="3"/>
+        <screen  i="3" j="3"/>
     </process>
+    <process host="s3" display=":0.0" rank ="3">
+        <screen  i="0" j="2"/>
+        <screen  i="1" j="2"/>
+        <screen  i="2" j="2"/>
+        <screen  i="3" j="2"/>
+    </process>
+    <process host="s4" display=":0.0" rank ="4">
+        <screen  i="0" j="1"/>
+        <screen  i="1" j="1"/>
+        <screen  i="2" j="1"/>
+        <screen  i="3" j="1"/>
+    </process>
+    <process host="s5" display=":0.0" rank ="5">
+        <screen  i="0" j="0"/>
+        <screen  i="1" j="0"/>
+        <screen  i="2" j="0"/>
+        <screen  i="3" j="0"/>
+    </process>
+    <process host="s6" display=":0.0" rank ="6">
+        <screen  i="4" j="4"/>
+        <screen  i="5" j="4"/>
+        <screen  i="6" j="4"/>
+        <screen  i="7" j="4"/>
+    </process>
+    <process host="s7" display=":0.0" rank ="7">
+        <screen  i="4" j="3"/>
+        <screen  i="5" j="3"/>
+        <screen  i="6" j="3"/>
+        <screen  i="7" j="3"/>
+    </process>
+    <process host="s8" display=":0.0" rank ="8">
+        <screen  i="4" j="2"/>
+        <screen  i="5" j="2"/>
+        <screen  i="6" j="2"/>
+        <screen  i="7" j="2"/>
+    </process>
+    <process host="s9" display=":0.0" rank ="9">
+        <screen  i="4" j="1"/>
+        <screen  i="5" j="1"/>
+        <screen  i="6" j="1"/>
+        <screen  i="7" j="1"/>
+    </process>
+    <process host="s10" display=":0.0" rank ="10">
+        <screen  i="4" j="0"/>
+        <screen  i="5" j="0"/>
+        <screen  i="6" j="0"/>
+        <screen  i="7" j="0"/>
+    </process>
+    <process host="s11" display=":0.0" rank ="11">
+        <screen  i="8" j="4"/>
+        <screen  i="9" j="4"/>
+        <screen  i="10" j="4"/>
+        <screen  i="11" j="4"/>
+    </process>
+    <process host="s12" display=":0.0" rank ="12">
+        <screen  i="8" j="3"/>
+        <screen  i="9" j="3"/>
+        <screen  i="10" j="3"/>
+        <screen  i="11" j="3"/>
+    </process>   
+    <process host="s13" display=":0.0" rank ="13">
+        <screen  i="8" j="2"/>
+        <screen  i="9" j="2"/>
+        <screen  i="10" j="2"/>
+        <screen  i="11" j="2"/>
+    </process>
+    <process host="s14" display=":0.0" rank ="14">
+        <screen  i="8" j="1"/>
+        <screen  i="9" j="1"/>
+        <screen  i="10" j="1"/>
+        <screen  i="11" j="1"/>
+    </process>   
+	<process host="s15" display=":0.0" rank ="15">
+        <screen  i="8" j="0"/>
+        <screen  i="9" j="0"/>
+        <screen  i="10" j="0"/>
+        <screen  i="11" j="0"/>
+    </process>
+	<process host="s16" display=":0.0" rank ="16">
+        <screen  i="12" j="4"/>
+        <screen  i="13" j="4"/>
+        <screen  i="14" j="4"/>
+        <screen  i="15" j="4"/>
+    </process>
+
+    <process host="s17" display=":0.0" rank ="17">
+        <screen  i="12" j="3"/>
+        <screen  i="13" j="3"/>
+        <screen  i="14" j="3"/>
+        <screen  i="15" j="3"/>
+    </process>   
+    <process host="s18" display=":0.0" rank ="18">
+        <screen  i="12" j="2"/>
+        <screen  i="13" j="2"/>
+        <screen  i="14" j="2"/>
+        <screen  i="15" j="2"/>
+    </process>
+
+    <process host="s19" display=":0.0" rank ="19">
+        <screen  i="12" j="1"/>
+        <screen  i="13" j="1"/>
+        <screen  i="14" j="1"/>
+        <screen  i="15" j="1"/>
+    </process>   
+	<process host="s20" display=":0.0" rank ="20">
+        <screen  i="12" j="0"/>
+        <screen  i="13" j="0"/>
+        <screen  i="14" j="0"/>
+        <screen  i="15" j="0"/>
+    </process>
+
     
-    
+
 </configuration>
