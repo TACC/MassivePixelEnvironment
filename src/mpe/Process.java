@@ -140,12 +140,15 @@ public class Process extends Thread {
 		pApplet_.registerMethod("pre", this);
 		
 		// when the sketch is stopped, it will call the dispose method in this class
-		pApplet_.registerMethod("dispose", this);
+		//pApplet_.registerMethod("dispose", this);
 		
 		// by default, automatically serialize mouse and keyboard events
 		
 		
 		barrier_ = new CyclicBarrier(config_.numFollowers_ + 1);
+		
+		//set the initial window location of the processing sketch
+		pApplet_.frame.setLocation(0,0);
 		
 		if (debug_)
 			config_.printSettings();
@@ -183,6 +186,7 @@ public class Process extends Thread {
 	 * The dispose() method is what gets called when the host applet is being shut down, 
 	 * so this should stop any threads, disconnect from the net, unload memory, etc.
 	 */
+	
 	public void dispose()
 	{
 		if(debug_) print("Shutting down MPE");

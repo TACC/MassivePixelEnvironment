@@ -16,13 +16,10 @@ Configuration tileConfig;
 void setup() {
   
   // create a new configuration object and specify the path to the configuration file
-  tileConfig = new Configuration(dataPath("configuration_stallion.xml"), this);
+  tileConfig = new Configuration(dataPath("configuration.xml"), this);
   
   // set the size of the sketch based on the configuration file
   size(tileConfig.getLWidth(), tileConfig.getLHeight(), OPENGL);
-  
-  //set the window location of the processing sketch
-  frame.setLocation(0,0);
   
   // create a new process
   process = new Process(tileConfig);
@@ -35,6 +32,9 @@ void setup() {
   cam.setMinimumDistance(0);
   cam.setMaximumDistance(5000);
   
+  if(tileConfig.isLeader())
+      strokeWeight(.1);
+  
   // start the MPE process
   process.start();
 }
@@ -45,7 +45,7 @@ void draw() {
   {
     // set the animation time to 0, otherwise we get weird behavior
     cam.setState((CameraState) process.getMessage(), 0);
-  }
+  }  
   
   // draw a couple boxes
   scale(5);
