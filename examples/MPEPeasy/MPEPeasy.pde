@@ -1,3 +1,10 @@
+import peasy.*;
+PeasyCam cam;
+
+// MPE includes
+import mpe.Process;
+import mpe.Configuration;
+
 // MPE Process thread
 Process process;
 
