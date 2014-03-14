@@ -148,7 +148,13 @@ public class Process extends Thread {
 		barrier_ = new CyclicBarrier(config_.numFollowers_ + 1);
 		
 		//set the initial window location of the processing sketch
-		pApplet_.frame.setLocation(0,0);
+		pApplet_.frame.setLocation(config_.getWindowLocation()[0],config_.getWindowLocation()[1]);
+		
+		pApplet_.frame.setTitle(pApplet_.getClass().getName()+ " window, rank: " + config_.getRank());
+		
+		if (debug_) {
+			System.out.println("Setting window location to: "+config_.getWindowLocation()[0]+", "+config_.getWindowLocation()[1]);
+		}
 		
 		if (debug_)
 			config_.printSettings();
@@ -458,6 +464,15 @@ public class Process extends Thread {
 		fov_ = fov;
 		cameraZ_ = (config_.getMasterDim()[1]/2.0f) / PApplet.tan(PConstants.PI * fov_/180.0f);
 	}
+	
+	/*
+	public void compensateMullions(PApplet pa)
+	{
+		PGraphics buf = createGraphics(config_.getLWidth(), config_.getLHeight(), P3D);
+		PGraphics screen = pa.g;
+		
+	}
+	*/
 	
 	/*
 	 * Begin private methods
