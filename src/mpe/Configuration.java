@@ -258,6 +258,14 @@ public class Configuration {
 		return masterDim_;
 	}
 
+	public int getMWidth(){
+		return masterDim_[0];
+	}
+	
+	public int getMHeight(){
+		return masterDim_[1];
+	}
+	
 	public int[] getOffsets() {
 		return offsets_;
 	}
