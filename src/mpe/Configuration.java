@@ -19,7 +19,7 @@ public class Configuration {
 	
 	private String file_;
 	
-	private String server_ = null;;
+	private String server_ = null;
 	private int port_;
 	private int[] localDim_;
 	private int[] masterDim_;
@@ -259,11 +259,11 @@ public class Configuration {
 	}
 
 	public int getMWidth(){
-		return masterDim_[0];
+		return numTiles_[0]*tileRes_[0] + (numTiles_[0] - 1)*bezels_[0];
 	}
 	
 	public int getMHeight(){
-		return masterDim_[1];
+		return numTiles_[1]*tileRes_[1] + (numTiles_[1] - 1)*bezels_[1];
 	}
 	
 	public int[] getOffsets() {
