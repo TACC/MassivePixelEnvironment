@@ -1,8 +1,13 @@
 package mpe;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.lang.ProcessBuilder.Redirect;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -10,6 +15,12 @@ import java.util.Vector;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+
+
+
+
+
 
 //we need to access processing from this class
 import processing.core.*;
@@ -385,13 +396,13 @@ public class Process extends Thread {
 				Command command = null;
 				try {
 					command = (Command) ois_.readObject();
-				} catch (IOException e) {
-					print("Leader disconnected! Exiting.");
-					System.exit(-1);
-				} catch (ClassNotFoundException e) {
-					print("Leader disconnected! Exiting.");
-					System.exit(-1);
-				} // blocks until new msg is available
+				} catch(Exception e){	
+					try {
+					shutDown();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
 				if(command == null)
 					break; // remote end hung up
 				readCommand(command);
@@ -678,6 +689,31 @@ public class Process extends Thread {
 			print("No attributes were received! Check w/ messageReceived() first!");
 			return null;
 		}		
+	}
+	
+	public void shutDown() throws IOException
+	{
+		// kill all previously launched process'
+    	java.lang.Process kp;
+    	java.lang.ProcessBuilder pb;
+    	try {
+			pb = new ProcessBuilder("pkill", "-9", "-f", "agentlib");
+			String path = "/home/vislab/Processing/sketchbook/MPEPeasy/log";
+			if(debug_){
+//				BufferedWriter pw = new BufferedWriter(new FileWriter(path + config_.getRank()));
+				File log = new File(path);
+				pb.redirectErrorStream(true);
+				pb.redirectOutput(Redirect.appendTo(log));
+//				pw.append(config_.getRank() + ": inside shutdown");
+//				pw.close();
+    			}	
+			kp = pb.start();
+			} catch (Exception e) {
+			// TODO Auto-generated catch block
+				
+				e.printStackTrace();
+		}
+    		
 	}
 
 }
