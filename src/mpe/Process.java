@@ -1,8 +1,13 @@
 package mpe;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.lang.ProcessBuilder.Redirect;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -10,6 +15,12 @@ import java.util.Vector;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+
+
+
+
+
 
 //we need to access processing from this class
 import processing.core.*;
@@ -102,6 +113,8 @@ public class Process extends Thread {
 	ObjectInputStream ois_;
 	ObjectOutputStream oos_;
 	
+	AutoLauncher autoLauncher_;
+	
 	// by default, do not serialize mouse and keyboard events (they are not serializable yet) //todo
 	//boolean enableDefaultSerialization_ = false;
 	
@@ -134,13 +147,25 @@ public class Process extends Thread {
 		cameraZ_ = (config_.getMasterDim()[1]/2.0f) / PApplet.tan(PConstants.PI * fov_/180.0f);
 		
 		// after the sketch calls draw, it will call the draw method in this class
-		pApplet_.registerDraw(this);
-		pApplet_.registerPre(this);
+		pApplet_.registerMethod("draw", this);
+		pApplet_.registerMethod("pre", this);
+		
+		// when the sketch is stopped, it will call the dispose method in this class
+		//pApplet_.registerMethod("dispose", this);
 		
 		// by default, automatically serialize mouse and keyboard events
 		
 		
 		barrier_ = new CyclicBarrier(config_.numFollowers_ + 1);
+		
+		//set the initial window location of the processing sketch
+		pApplet_.frame.setLocation(config_.getWindowLocation()[0],config_.getWindowLocation()[1]);
+		
+		pApplet_.frame.setTitle(pApplet_.getClass().getName()+ " window, rank: " + config_.getRank());
+		
+		if (debug_) {
+			System.out.println("Setting window location to: "+config_.getWindowLocation()[0]+", "+config_.getWindowLocation()[1]);
+		}
 		
 		if (debug_)
 			config_.printSettings();
@@ -171,6 +196,34 @@ public class Process extends Thread {
 		// send end-of-frame message if not leader
 		if(!config_.isLeader())
 			endFrame();
+	}
+	
+	/**
+	 * Called to free resources before shutting down. This should only be called by PApplet. 
+	 * The dispose() method is what gets called when the host applet is being shut down, 
+	 * so this should stop any threads, disconnect from the net, unload memory, etc.
+	 */
+	
+	public void dispose()
+	{
+		if(debug_) print("Shutting down MPE");
+		
+		//autoLauncher_.shutDown();
+		
+		System.exit(0);
+		
+		for(int i = 0; i < clients_.size(); i++) 
+		{
+			if(debug_) print("Shuting down client process "+i);
+			
+			// shut down client processes here
+			//Connection c = clients_.elementAt(i);
+			//c = null;
+			
+			clients_.elementAt(i).interrupt();
+			
+		}
+		return;
 	}
 	
 	/**
@@ -253,8 +306,11 @@ public class Process extends Thread {
 			// create thread to launch processes on remote nodes
 			if(autostart_)
 			{
-				AutoLauncher autoLauncher = new AutoLauncher(config_.getFilename(), pApplet_.sketchPath);
-				autoLauncher.start();
+				autoLauncher_ = new AutoLauncher(config_.getFilename(), pApplet_.sketchPath);
+				autoLauncher_.start();
+				
+				//AutoLauncher autoLauncher = new AutoLauncher(config_.getFilename(), pApplet_.sketchPath);
+				//autoLauncher.start();
 			}
 			
 			// set listener for all connections
@@ -340,13 +396,13 @@ public class Process extends Thread {
 				Command command = null;
 				try {
 					command = (Command) ois_.readObject();
-				} catch (IOException e) {
-					print("Leader disconnected! Exiting.");
-					System.exit(-1);
-				} catch (ClassNotFoundException e) {
-					print("Leader disconnected! Exiting.");
-					System.exit(-1);
-				} // blocks until new msg is available
+				} catch(Exception e){	
+					try {
+					shutDown();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
 				if(command == null)
 					break; // remote end hung up
 				readCommand(command);
@@ -421,6 +477,15 @@ public class Process extends Thread {
 	}
 	
 	/*
+	public void compensateMullions(PApplet pa)
+	{
+		PGraphics buf = createGraphics(config_.getLWidth(), config_.getLHeight(), P3D);
+		PGraphics screen = pa.g;
+		
+	}
+	*/
+	
+	/*
 	 * Begin private methods
 	 */
 	
@@ -460,14 +525,18 @@ public class Process extends Thread {
 		  float far = 1000;
 		*/ 
 		float mod = 0.1f;
-        float left   = (config_.getOffsets()[0] - config_.getMasterDim()[0]/2)*mod;
-        float right  = ((config_.getOffsets()[0] + config_.getLocalDim()[0]) - config_.getMasterDim()[0]/2)*mod;
-        float bottom = (config_.getOffsets()[1] - config_.getMasterDim()[1]/2)*mod;
-        float top = ((config_.getOffsets()[1] + config_.getLocalDim()[1]) - config_.getMasterDim()[1]/2)*mod;
+        float left   = (config_.getOffsets()[0] - config_.getMasterDim()[0]/2.0f)*mod;
+        float right  = ((config_.getOffsets()[0] + config_.getLocalDim()[0]) - config_.getMasterDim()[0]/2.0f)*mod;
+        float bottom = (config_.getOffsets()[1] - config_.getMasterDim()[1]/2.0f)*mod;
+        float top = ((config_.getOffsets()[1] + config_.getLocalDim()[1]) - config_.getMasterDim()[1]/2.0f)*mod;
         float near   = cameraZ_*mod;
         float far    = 10000;
         pApplet_.frustum(left,right,bottom,top,near,far);
-		
+        
+        if(debug_) print("left: "+left+" right: "+right+" bottom: "+bottom+" top: "+top);
+        if(debug_) print("master width: "+getMWidth()+" master height: "+getMHeight()+" local width: "+getLWidth()+" local height: "+getLHeight());
+		if(debug_) print("offset 0: "+config_.getOffsets()[0]+", offset 1: "+config_.getOffsets()[1]);
+        
 		/*
 		double near = 0.1;
 		double far  = 10000.;
@@ -487,6 +556,8 @@ public class Process extends Thread {
 	// simply offsets the screen in space
 	private void placeScreen2D()
 	{
+		if (debug_)
+			System.out.println("Placing screen at: " + config_.getOffsets()[0]*-1 + ", " + config_.getOffsets()[1]*-1);
 		pApplet_.translate(config_.getOffsets()[0] * -1, config_.getOffsets()[1] * -1);
 	}
 	
@@ -619,4 +690,30 @@ public class Process extends Thread {
 			return null;
 		}		
 	}
+	
+	public void shutDown() throws IOException
+	{
+		// kill all previously launched process'
+    	java.lang.Process kp;
+    	java.lang.ProcessBuilder pb;
+    	try {
+			pb = new ProcessBuilder("pkill", "-9", "-f", "agentlib");
+			String path = "/home/vislab/Processing/sketchbook/MPEPeasy/log";
+			if(debug_){
+//				BufferedWriter pw = new BufferedWriter(new FileWriter(path + config_.getRank()));
+				File log = new File(path);
+				pb.redirectErrorStream(true);
+				pb.redirectOutput(Redirect.appendTo(log));
+//				pw.append(config_.getRank() + ": inside shutdown");
+//				pw.close();
+    			}	
+			kp = pb.start();
+			} catch (Exception e) {
+			// TODO Auto-generated catch block
+				
+				e.printStackTrace();
+		}
+    		
+	}
+
 }

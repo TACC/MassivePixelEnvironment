@@ -19,7 +19,7 @@ public class Configuration {
 	
 	private String file_;
 	
-	private String server_ = null;;
+	private String server_ = null;
 	private int port_;
 	private int[] localDim_;
 	private int[] masterDim_;
@@ -27,6 +27,7 @@ public class Configuration {
 	private int[] tileRes_;
 	private int[] numTiles_;
 	private int[] bezels_;
+	private int[] windowLocation_;
 	private String display_;
 	private int rank_;
 	private boolean debug_ = true;
@@ -58,6 +59,7 @@ public class Configuration {
 		localDim_  = new int[2];
 		masterDim_ = new int[2];
 		offsets_   = new int[2];
+		windowLocation_ = new int[2];
 		
 		// set up the pipeline for reading XML
 		
@@ -87,6 +89,7 @@ public class Configuration {
 		debug_ = Integer.parseInt(dimensions.attribute("debug").v) == 1;
 		
 		numFollowers_ = config.children().getLength() - 3;
+		System.out.println("numFollowers_ = " + numFollowers_);
 		System.out.println("loading XML dimensions node, head");
 		Jode head = config.first("head");
 		
@@ -149,6 +152,30 @@ public class Configuration {
 		int minj = Integer.parseInt(childi.attribute("j").v);
 		int maxj = Integer.parseInt(childi.attribute("j").v);
 		
+		
+		// note: this won't work generically -- only when addressing multiple screens in one display (ala xinerama) -- add tag for this?
+		windowLocation_[0] = (mini)*tileRes_[0];
+		windowLocation_[1] = 0;
+		
+		try
+		{
+			windowLocation_[0] = Integer.parseInt(childi.attribute("x").v);
+			System.out.println("!!!! x: "+childi.attribute("x").v);
+		}
+		catch (Exception e)
+		{
+			if (debug_) System.out.println("no x attribute found for rank "+rank_);
+		}
+		
+		try
+		{
+			windowLocation_[1] = Integer.parseInt(childi.attribute("y").v);
+		}
+		catch (Exception e)
+		{
+			if (debug_) System.out.println("no y attribute found for rank "+rank_);
+		}
+		
 		for(int i = 0; i < child.children().getLength(); i++)
 		{
 			childi = child.children().get(i);
@@ -162,9 +189,15 @@ public class Configuration {
 				maxj = Integer.parseInt(childi.attribute("j").v);
 		}
 		
+		//windowLocation_[0] = 0;
+		//windowLocation_[1] = 0;
+		
 		// this get the size of the monitor array for this host in screens
 		int rangei = maxi - mini + 1;
 		int rangej = maxj - minj + 1;
+		
+		if (debug_)
+			System.out.println("maxi: "+maxi+" mini: "+mini+" rangei: "+rangei);
 		
 		int totalMullionsX = (rangei - 1)*bezels_[0];
 		int totalMullionsY = (rangej - 1)*bezels_[1];
@@ -175,9 +208,18 @@ public class Configuration {
 		masterDim_[0] = numTiles_[0]*tileRes_[0] + (numTiles_[0] - 1)*bezels_[0];
 		masterDim_[1] = numTiles_[1]*tileRes_[1] + (numTiles_[1] - 1)*bezels_[1];
 		
+		if (debug_)
+		{
+			System.out.println("masterDim_[0]: "+masterDim_[0]+"masterDim_[1]: "+masterDim_[1]);
+			System.out.println("localDim_[0]: "+localDim_[0]+"localDim_[1]: "+localDim_[1]);
+		}
+		
 		// offsets
 		offsets_[0] = (mini)*tileRes_[0] + mini*bezels_[0];
 		offsets_[1] = (minj)*tileRes_[1] + minj*bezels_[1];
+		
+		//set the initial window location of the processing sketch
+		//_p.frame.setLocation(0,0);		
 		
 		if(debug_)
 			printSettings();
@@ -216,8 +258,22 @@ public class Configuration {
 		return masterDim_;
 	}
 
+	public int getMWidth(){
+		return numTiles_[0]*tileRes_[0] + (numTiles_[0] - 1)*bezels_[0];
+	}
+	
+	public int getMHeight(){
+		return numTiles_[1]*tileRes_[1] + (numTiles_[1] - 1)*bezels_[1];
+	}
+	
 	public int[] getOffsets() {
 		return offsets_;
+	}
+	
+	// Returns an array containing the (x,y) location of the sketch window 
+	
+	public int[] getWindowLocation() {
+		return windowLocation_;
 	}
 
 	public int getNumFollowers()
@@ -251,7 +307,8 @@ public class Configuration {
 		System.out.println("Settings: Rank: " + rank_ + 
 					", offsets: " + offsets_[0] + "," + offsets_[1] +
 					", lDims: " + localDim_[0] + "," + localDim_[1] +
-					", mDims: " + masterDim_[0] + "," + masterDim_[1]);
+					", mDims: " + masterDim_[0] + "," + masterDim_[1] +
+					", windowLocation: " + windowLocation_[0] + "," + windowLocation_[1]);
 	}
 	
 }

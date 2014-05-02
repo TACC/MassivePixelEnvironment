@@ -11,13 +11,13 @@
         <screen x="0" y="0" i="0" j="0"/>
     </process>
     <process host="localhost" display=":0" rank="2">
-        <screen x="0" y="0" i="0" j="1"/>
+        <screen x="200" y="0" i="0" j="1"/>
     </process>
     <process host="localhost" display=":0" rank="3">
         <screen x="0" y="0" i="1" j="0"/>
     </process>
     <process host="localhost" display=":0" rank="4">
-        <screen x="0" y="0" i="1" j="1"/>
+        <screen x="200" y="0" i="1" j="1"/>
     </process>
     
 </configuration>

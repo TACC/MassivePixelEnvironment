@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Vector;
 
@@ -54,7 +55,7 @@ public class AutoLauncher extends Thread {
 				}
 				else
 				{
-					String rank = child.attribute("rank").v;
+					final String rank = child.attribute("rank").v;
 					final String hostName = child.attribute("host").v;
 					
 					String display=":0.0";
@@ -62,25 +63,27 @@ public class AutoLauncher extends Thread {
 						display = child.attribute("display").v;
 					
 					String[] command = {"ssh",
-										hostName, 
-										"export RANK="+rank, 
-										"export PATH=$PATH:"+processingPath,
-										"export DISPLAY="+display,
-										";", // seperate the exports with the executable
-										"processing-java", 
-										 "--sketch="+sketchPath_, 
-										 "--run", 
-										 "--output="+sketchPath_+"/"+hostName, 
-										 "--force"};
-					
+											hostName, 
+											"export RANK="+rank, 
+											"export PATH=$PATH:"+processingPath,
+											"export DISPLAY="+display,
+											";", // seperate the exports with the executable
+											"processing-java", 
+											 "--sketch="+sketchPath_, 
+											 "--run", 
+											 "--output="+sketchPath_+"/"+hostName+"_"+rank, 
+											 "--force"};
+
 					// the ProcessBuilder will launch the process external to the VM with specified env. parameters
 					ProcessBuilder pb = new ProcessBuilder(command);
 					Map<String, String> env = pb.environment();
 					//env.put("RANK", rank);
 					//env.put("PATH", "PATH=" + processingPath);
+					//System.out.println(Arrays.toString(command));
 
 					// start the process and merge output streams of child process' with head stream
 					try {
+						
 						pb.redirectErrorStream(true);
 						java.lang.Process p = pb.start();
 						processVector_.add(p);
@@ -93,7 +96,7 @@ public class AutoLauncher extends Thread {
 						                new BufferedReader(new InputStreamReader(is));
 						            String line;
 						            while ((line = reader.readLine()) != null) {
-						                System.out.println(hostName + ": " + line);
+						                System.out.println(hostName + "-rank" + rank + ": " + line);
 						            }
 						        } catch (IOException e) {
 						            e.printStackTrace();
@@ -116,5 +119,56 @@ public class AutoLauncher extends Thread {
 				}
 			}
 		}
+	}
+	
+	/*
+	public void replace() {
+	      String oldFileName = "~/.processing/preferences.txt";
+	      String tmpFileName = "~/.processing/tmp_preferences.txt";
+
+	      BufferedReader br = null;
+	      BufferedWriter bw = null;
+	      try {
+	         br = new BufferedReader(new FileReader(oldFileName));
+	         bw = new BufferedWriter(new FileWriter(tmpFileName));
+	         String line;
+	         while ((line = br.readLine()) != null) {
+	            if (line.contains("run.display"))
+	               line = line.replaceAll(":0.0", "");
+	            bw.write(line+"\n");
+	         }
+	      } catch (Exception e) {
+	         return;
+	      } finally {
+	         try {
+	            if(br != null)
+	               br.close();
+	         } catch (IOException e) {
+	            //
+	         }
+	         try {
+	            if(bw != null)
+	               bw.close();
+	         } catch (IOException e) {
+	            //
+	         }
+	      }
+	      // Once everything is complete, delete old file..
+	      File oldFile = new File(oldFileName);
+	      oldFile.delete();
+
+	      // And rename tmp file's name to old file name
+	      File newFile = new File(tmpFileName);
+	      newFile.renameTo(oldFile);
+
+	}
+	*/
+	
+	public void shutDown()
+	{
+		// kill all previously launched process'
+		for(java.lang.Process p : processVector_)
+			p.destroy();
+		System.exit(0);
 	}
 }

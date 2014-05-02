@@ -1,5 +1,3 @@
-import processing.opengl.*;
-
 import peasy.*;
 PeasyCam cam;
 
@@ -32,6 +30,9 @@ void setup() {
   cam.setMinimumDistance(0);
   cam.setMaximumDistance(5000);
   
+  if(tileConfig.isLeader())
+      strokeWeight(.1);
+  
   // start the MPE process
   process.start();
 }
@@ -42,7 +43,7 @@ void draw() {
   {
     // set the animation time to 0, otherwise we get weird behavior
     cam.setState((CameraState) process.getMessage(), 0);
-  }
+  }  
   
   // draw a couple boxes
   scale(5);
