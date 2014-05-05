@@ -1,8 +1,13 @@
 package mpe;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.lang.ProcessBuilder.Redirect;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -11,13 +16,19 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+
+
+
+
+
+
 //we need to access processing from this class
 import processing.core.*;
 //import processing.event.KeyEvent;
 //import processing.event.MouseEvent;
 
 /**
- * This class is used as a communication thread to synchronize events between other processing processes.
+ * This class facilitates the execution of multiple Processing applications across a distributed environment.
  * @author Brandt Westing TACC
  *
  */
@@ -25,12 +36,14 @@ import processing.core.*;
 public class Process extends Thread {
 	
 	public final static String VERSION = "##version##";
+	
+	// used for timers
 	public static long start;
 	public static long end;
 	public static long elapsed;
 	
 	// contains identifier and screen-space info for this process
-	Configuration config_; 
+	Configuration config_;
 	
 	/*
 	 * A process may either be either a leader or follower.
@@ -59,6 +72,9 @@ public class Process extends Thread {
 	
 	// true if the camera should be placed during placeScreen. Set to false for peasyCam, etc.
 	boolean placeCamera_ = true;
+	
+	// true if auto-start is enabled (Default)
+	boolean autostart_ = true;
 	
 	// keeps track of the state of the followers
 	FollowerState followerState_;
@@ -97,6 +113,8 @@ public class Process extends Thread {
 	ObjectInputStream ois_;
 	ObjectOutputStream oos_;
 	
+	AutoLauncher autoLauncher_;
+	
 	// by default, do not serialize mouse and keyboard events (they are not serializable yet) //todo
 	//boolean enableDefaultSerialization_ = false;
 	
@@ -129,15 +147,28 @@ public class Process extends Thread {
 		cameraZ_ = (config_.getMasterDim()[1]/2.0f) / PApplet.tan(PConstants.PI * fov_/180.0f);
 		
 		// after the sketch calls draw, it will call the draw method in this class
-		pApplet_.registerDraw(this);
-		pApplet_.registerPre(this);
+		pApplet_.registerMethod("draw", this);
+		pApplet_.registerMethod("pre", this);
+		
+		// when the sketch is stopped, it will call the dispose method in this class
+		//pApplet_.registerMethod("dispose", this);
 		
 		// by default, automatically serialize mouse and keyboard events
 		
 		
 		barrier_ = new CyclicBarrier(config_.numFollowers_ + 1);
 		
-		config_.printSettings();
+		//set the initial window location of the processing sketch
+		pApplet_.frame.setLocation(config_.getWindowLocation()[0],config_.getWindowLocation()[1]);
+		
+		pApplet_.frame.setTitle(pApplet_.getClass().getName()+ " window, rank: " + config_.getRank());
+		
+		if (debug_) {
+			System.out.println("Setting window location to: "+config_.getWindowLocation()[0]+", "+config_.getWindowLocation()[1]);
+		}
+		
+		if (debug_)
+			config_.printSettings();
 		
 		running_ = true;
 	}
@@ -148,7 +179,6 @@ public class Process extends Thread {
 	public void pre()
 	{
 		if(debug_) print("Trying to acquire framelock!");
-
 		
 		// wait on framelock to be unlocked
 		frameLock_.acquire();
@@ -166,6 +196,34 @@ public class Process extends Thread {
 		// send end-of-frame message if not leader
 		if(!config_.isLeader())
 			endFrame();
+	}
+	
+	/**
+	 * Called to free resources before shutting down. This should only be called by PApplet. 
+	 * The dispose() method is what gets called when the host applet is being shut down, 
+	 * so this should stop any threads, disconnect from the net, unload memory, etc.
+	 */
+	
+	public void dispose()
+	{
+		if(debug_) print("Shutting down MPE");
+		
+		//autoLauncher_.shutDown();
+		
+		System.exit(0);
+		
+		for(int i = 0; i < clients_.size(); i++) 
+		{
+			if(debug_) print("Shuting down client process "+i);
+			
+			// shut down client processes here
+			//Connection c = clients_.elementAt(i);
+			//c = null;
+			
+			clients_.elementAt(i).interrupt();
+			
+		}
+		return;
 	}
 	
 	/**
@@ -204,7 +262,7 @@ public class Process extends Thread {
 		}
 		*/
 		
-		// we are just a follower, just register with leader
+		// we are just a follower, register with leader
 		if(!config_.isLeader())
 		{
 			// set up socket to leader, retrying every two seconds if fail
@@ -222,9 +280,11 @@ public class Process extends Thread {
 		            ois_ = new ObjectInputStream(processSocket_.getInputStream());
 				} catch (UnknownHostException e) {
 					System.out.println("Can't connect to leader process! Did you specify a 'head' process in config? Retrying!");
+					e.printStackTrace();
 					notConnected = true;
 				} catch (IOException e) {
 					System.out.println("Can't connect to leader process! Did you specify a 'head' process in config? Retrying!");
+					e.printStackTrace();
 					notConnected = true;
 				}
 				
@@ -241,8 +301,17 @@ public class Process extends Thread {
 		// we are the leader, create connection listener(s)
 		if(config_.isLeader())
 		{
-			
 			clients_ = new Vector<Connection>();
+			
+			// create thread to launch processes on remote nodes
+			if(autostart_)
+			{
+				autoLauncher_ = new AutoLauncher(config_.getFilename(), pApplet_.sketchPath);
+				autoLauncher_.start();
+				
+				//AutoLauncher autoLauncher = new AutoLauncher(config_.getFilename(), pApplet_.sketchPath);
+				//autoLauncher.start();
+			}
 			
 			// set listener for all connections
 	        ServerSocket listener = null;
@@ -289,7 +358,7 @@ public class Process extends Thread {
 	}
 	
 	/**
-	 * Called automagically by start().
+	 * Called auto-magically by start().
 	 */
 	public void run()
 	{
@@ -312,7 +381,9 @@ public class Process extends Thread {
 				barrier_.reset();
 				
 				// release the framelock so master can render
+				if(debug_) print("Releasing framelock!");
 				frameLock_.release();
+				
 									
 				// send a FE message to all clients so they render the next scene
 				Process.start = System.currentTimeMillis();
@@ -325,13 +396,13 @@ public class Process extends Thread {
 				Command command = null;
 				try {
 					command = (Command) ois_.readObject();
-				} catch (IOException e) {
-					print("Leader disconnected! Exiting.");
-					System.exit(-1);
-				} catch (ClassNotFoundException e) {
-					print("Leader disconnected! Exiting.");
-					System.exit(-1);
-				} // blocks until new msg is available
+				} catch(Exception e){	
+					try {
+					shutDown();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
 				if(command == null)
 					break; // remote end hung up
 				readCommand(command);
@@ -378,6 +449,14 @@ public class Process extends Thread {
 	}
 	
 	/**
+	 * Disables autostart of MPE children across cluster. To use MPE you must use mperun script.
+	 */
+	public void disableAutoStart()
+	{
+		autostart_ = false;
+	}
+	
+	/**
 	 * Disables the automatic serialization of mouse and keyboard events from the head process to the render processes.
 	 */
 	/*
@@ -396,6 +475,15 @@ public class Process extends Thread {
 		fov_ = fov;
 		cameraZ_ = (config_.getMasterDim()[1]/2.0f) / PApplet.tan(PConstants.PI * fov_/180.0f);
 	}
+	
+	/*
+	public void compensateMullions(PApplet pa)
+	{
+		PGraphics buf = createGraphics(config_.getLWidth(), config_.getLHeight(), P3D);
+		PGraphics screen = pa.g;
+		
+	}
+	*/
 	
 	/*
 	 * Begin private methods
@@ -437,14 +525,18 @@ public class Process extends Thread {
 		  float far = 1000;
 		*/ 
 		float mod = 0.1f;
-        float left   = (config_.getOffsets()[0] - config_.getMasterDim()[0]/2)*mod;
-        float right  = ((config_.getOffsets()[0] + config_.getLocalDim()[0]) - config_.getMasterDim()[0]/2)*mod;
-        float bottom = (config_.getOffsets()[1] - config_.getMasterDim()[1]/2)*mod;
-        float top = ((config_.getOffsets()[1] + config_.getLocalDim()[1]) - config_.getMasterDim()[1]/2)*mod;
+        float left   = (config_.getOffsets()[0] - config_.getMasterDim()[0]/2.0f)*mod;
+        float right  = ((config_.getOffsets()[0] + config_.getLocalDim()[0]) - config_.getMasterDim()[0]/2.0f)*mod;
+        float bottom = (config_.getOffsets()[1] - config_.getMasterDim()[1]/2.0f)*mod;
+        float top = ((config_.getOffsets()[1] + config_.getLocalDim()[1]) - config_.getMasterDim()[1]/2.0f)*mod;
         float near   = cameraZ_*mod;
         float far    = 10000;
         pApplet_.frustum(left,right,bottom,top,near,far);
-		
+        
+        if(debug_) print("left: "+left+" right: "+right+" bottom: "+bottom+" top: "+top);
+        if(debug_) print("master width: "+getMWidth()+" master height: "+getMHeight()+" local width: "+getLWidth()+" local height: "+getLHeight());
+		if(debug_) print("offset 0: "+config_.getOffsets()[0]+", offset 1: "+config_.getOffsets()[1]);
+        
 		/*
 		double near = 0.1;
 		double far  = 10000.;
@@ -464,6 +556,8 @@ public class Process extends Thread {
 	// simply offsets the screen in space
 	private void placeScreen2D()
 	{
+		if (debug_)
+			System.out.println("Placing screen at: " + config_.getOffsets()[0]*-1 + ", " + config_.getOffsets()[1]*-1);
 		pApplet_.translate(config_.getOffsets()[0] * -1, config_.getOffsets()[1] * -1);
 	}
 	
@@ -492,6 +586,8 @@ public class Process extends Thread {
 				pApplet_.mouseEvent = c.m;
 			}
 			*/
+			if(debug_) print("Releasing framelock!");
+			
 			// release the framelock
 			frameLock_.release();
 			
@@ -594,4 +690,30 @@ public class Process extends Thread {
 			return null;
 		}		
 	}
+	
+	public void shutDown() throws IOException
+	{
+		// kill all previously launched process'
+    	java.lang.Process kp;
+    	java.lang.ProcessBuilder pb;
+    	try {
+			pb = new ProcessBuilder("pkill", "-9", "-f", "agentlib");
+			String path = "/home/vislab/Processing/sketchbook/MPEPeasy/log";
+			if(debug_){
+//				BufferedWriter pw = new BufferedWriter(new FileWriter(path + config_.getRank()));
+				File log = new File(path);
+				pb.redirectErrorStream(true);
+				pb.redirectOutput(Redirect.appendTo(log));
+//				pw.append(config_.getRank() + ": inside shutdown");
+//				pw.close();
+    			}	
+			kp = pb.start();
+			} catch (Exception e) {
+			// TODO Auto-generated catch block
+				
+				e.printStackTrace();
+		}
+    		
+	}
+
 }

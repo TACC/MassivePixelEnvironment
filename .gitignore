@@ -2,3 +2,5 @@
 *.css
 *.class
 distribution/*
+/bin
+/bin
