@@ -1,8 +1,8 @@
-MostPixelsEverCE - A library for extending Processing sketches across distributed displays.
+MassivePixelEnvironment for Processing - A library for extending Processing sketches across distributed displays.
 
 Part of the Processing project - http://processing.org
 
-Copyright (c) 2012 Brandt Westing
+Copyright (c) 2012 Texas Advanced Computing Center
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
