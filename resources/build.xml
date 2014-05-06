@@ -74,6 +74,7 @@
 	</tstamp>
 	
 	<target name="init"> 
+		<echo message="Using Java version ${ant.java.version}."/>
 		<echo>${line}
     Building the Processing library ${project.name} ${library.version}
 ${line}

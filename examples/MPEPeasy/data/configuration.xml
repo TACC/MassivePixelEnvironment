@@ -1,0 +1,23 @@
+<configuration>
+    <dimensions numTilesWidth="2" numTilesHeight="2" screenWidth="400" screenHeight="400" mullionWidth="0" mullionHeight="0" debug="1"/>
+    
+    <config processingPath="/home/turknett/lib/processing-2.1.1/"/>
+
+    <head host="localhost" port="9002" display=":0" rank="0">
+        <screen width="400" height="400"/>
+    </head>
+
+    <process host="localhost" display=":0" rank="1">
+        <screen x="0" y="0" i="0" j="0"/>
+    </process>
+    <process host="localhost" display=":0" rank="2">
+        <screen x="0" y="0" i="0" j="1"/>
+    </process>
+    <process host="localhost" display=":0" rank="3">
+        <screen x="0" y="0" i="1" j="0"/>
+    </process>
+    <process host="localhost" display=":0" rank="4">
+        <screen x="0" y="0" i="1" j="1"/>
+    </process>
+    
+</configuration>
