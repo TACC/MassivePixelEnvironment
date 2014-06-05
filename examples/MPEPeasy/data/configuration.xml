@@ -1,7 +1,7 @@
 <configuration>
     <dimensions numTilesWidth="2" numTilesHeight="2" screenWidth="400" screenHeight="400" mullionWidth="0" mullionHeight="0" debug="1"/>
     
-    <config processingPath="/home/turknett/lib/processing-2.1.1/"/>
+    <config processingPath="/share/apps/processing/2.1.2/"/>
 
     <head host="localhost" port="9002" display=":0" rank="0">
         <screen width="400" height="400"/>
