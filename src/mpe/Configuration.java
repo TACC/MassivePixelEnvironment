@@ -1,11 +1,12 @@
 package mpe;
 
+import java.io.File;
 import java.net.UnknownHostException;
+
 
 // XML parser library includes
 import xmlcomponents.Jocument;
 import xmlcomponents.Jode;
-
 import processing.core.PApplet;
 
 /**
@@ -64,7 +65,16 @@ public class Configuration {
 		// set up the pipeline for reading XML
 		
 		Jode root = null;
-		root = Jocument.load(_file);
+		File file = new File(_file);
+		if (file.isAbsolute()) {
+			if(debug_)
+				System.out.println("Configuration: loading config: " + file.getPath());
+			root = Jocument.load(_file);
+		} else {
+			if(debug_)
+				System.out.println("Configuration: loading config: " + _p.dataPath(_file));
+			root = Jocument.load(_p.dataPath(_file));
+		}
 								
 		// my DISPLAY identifier
 		display_ = System.getenv("DISPLAY");

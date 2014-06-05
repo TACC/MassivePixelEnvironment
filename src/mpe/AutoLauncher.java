@@ -1,6 +1,7 @@
 package mpe;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -31,8 +32,17 @@ public class AutoLauncher extends Thread {
 	
 	public void run()
 	{
+		System.out.println("AutoLauncher:loading XML configuration file");
 		Jode root = null;
-		root = Jocument.load(configFile_);
+		File file = new File(configFile_);
+		if (file.isAbsolute()) {
+			System.out.println("Absolute file path specified, loading config: " + file.getPath());
+			root = Jocument.load(configFile_);
+		} else {
+			configFile_ = sketchPath_ + "/data/" + configFile_;
+			System.out.println("Relative file path specified, loading config: " + configFile_);
+			root = Jocument.load(configFile_);
+		}
 		
 		System.out.println("AutoLauncher:loading XML configuration node");
 		Jode config = root.single("configuration");
