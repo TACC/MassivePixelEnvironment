@@ -16,7 +16,7 @@ In MPE:
 
 * [MPE Simple Guide](https://github.com/TACC/MassivePixelEnvironment/wiki/MassivePixelEnvironment-HowTo)
 
-## For Contributors
+## Contribute
 * [Build Instructions for Contributors](https://github.com/TACC/MassivePixelEnvironment/wiki/Build-Instructions-for-Contributors)
 
 ## Other Links
