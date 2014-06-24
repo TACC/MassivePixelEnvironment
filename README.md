@@ -12,9 +12,12 @@ In MPE:
 * The Processing sketch is easily launched across the cluster through the use of a single configuration file
 * Support for all features of Processing is available
 
-## Getting Started:
+## Getting Started
 
 * [MPE Simple Guide](https://github.com/TACC/MassivePixelEnvironment/wiki/MassivePixelEnvironment-HowTo)
+
+## For Contributors
+* [Build Instructions for Contributors](https://github.com/TACC/MassivePixelEnvironment/wiki/Build-Instructions-for-Contributors)
 
 ## Other Links
 * [MPE Project Page](http://www.tacc.utexas.edu/tacc-software/most-pixels-ever-cluster-edition)
